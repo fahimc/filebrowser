@@ -66,6 +66,7 @@ const previewViews = [
   'epubViewer',
   'docViewer',
   'onlyOfficeEditor',
+  'documentEditor',
   'editor',
   'loading',
   'threeJsViewer'

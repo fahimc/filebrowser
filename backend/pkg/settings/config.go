@@ -953,7 +953,7 @@ func SetDefaults(generate bool) Settings {
 			FileViewer: UserDefaultsFileViewer{
 				AutoplayMedia:           boolPtr(true),
 				DisableViewingExt:       "",
-				DisableOnlyOfficeExt:    ".md .txt .pdf .html .xml",
+				DisableOnlyOfficeExt:    ".md .txt .html .xml",
 				PreferEditorForMarkdown: false,
 				DebugOffice:             false,
 			},

@@ -19,7 +19,7 @@ backend_dev_tool = $$(cd $(BACKEND_BUILD) && go tool -n $(1))
 
 .SILENT:
 
-.PHONY: setup update build build-docker build-backend build-frontend dev run generate-docs
+.PHONY: setup update build build-docker build-backend build-frontend build-office-editor dev run generate-docs
 .PHONY: lint-frontend lint-backend lint test test-backend test-frontend check-all
 .PHONY: check-translations sync-translations test-playwright test-playwright-performance playwright-base playwright-perf-base perf-check perf-smoke perf-baseline perf-dashboard run-proxy screenshots
 .PHONY: check-icons generate-icons sync-icons setup-gofitz-cgo
@@ -61,7 +61,7 @@ build-backend:
 
 # Local development: Vite HMR (frontend) + Air (backend)
 .NOTPARALLEL: dev
-dev: generate-docs generate-icons setup-gofitz-cgo
+dev: build-office-editor generate-docs generate-icons setup-gofitz-cgo
 	@echo "Starting dev servers (Vite HMR + Air)... Press Ctrl+C to stop."
 	bash ./scripts/dev.sh
 
@@ -87,10 +87,21 @@ generate-docs:
 	@echo "Generating frontend config..."
 	cd backend && FILEBROWSER_GENERATE_CONFIG=true go run .
 
-build-frontend:
+build-frontend: build-office-editor
 	@echo "Building frontend..."
 	cd frontend && npm run build
+	bash ./scripts/copy-ranuts-document.sh
 	@echo "✓ Frontend built successfully"
+
+build-office-editor:
+	@echo "Building ranuts/document..."
+ifeq ($(OS),Windows_NT)
+	powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/build-office-editor.ps1
+else
+	bash ./scripts/patch-ranuts-document.sh
+	cd third_party/ranuts-document && pnpm install --frozen-lockfile && pnpm run build
+endif
+	bash ./scripts/copy-ranuts-document.sh
 
 lint-frontend:
 	cd frontend && npm run lint

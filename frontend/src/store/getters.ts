@@ -399,6 +399,7 @@ export const getters = {
       const ext = `.${reqName.split(".").pop()?.toLowerCase() ?? ""}`;
       if (state.user.disableViewingExt?.includes(ext)) return 'preview';
       if (state.req.type === 'directory') return 'listingView';
+      if ([".docx", ".xlsx", ".pptx", ".pdf"].includes(ext) && !getters.officeViewingDisabled(reqName)) return 'documentEditor';
       if (state.req.onlyOfficeId && !getters.officeViewingDisabled(reqName)) return 'onlyOfficeEditor';
       if (getTypeInfo(state.req.type).simpleType === '3d-model') return 'threeJsViewer';
 
@@ -548,6 +549,7 @@ export const getters = {
   },
   shouldFetchFileContent: (fileInfo: { name: string; source?: string; onlyOfficeId?: string }) => {
     if (getters.fileViewingDisabled(fileInfo.name)) return false
+    if (/\.(docx|xlsx|pptx|pdf)$/i.test(fileInfo.name) && !getters.officeViewingDisabled(fileInfo.name)) return false
     if (fileInfo.onlyOfficeId && !getters.officeViewingDisabled(fileInfo.name)) return false
     if (!getters.sourcePermissions(fileInfo.source).download) return false
     return true

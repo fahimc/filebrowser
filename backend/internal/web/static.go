@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"io/fs"
+	"mime"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,6 +21,124 @@ import (
 )
 
 var templateRenderer *TemplateRenderer
+var documentEditorFs fs.FS
+
+// registerDocumentEditorRoutes mounts ranuts/document's prebuilt static editor
+// from the same asset filesystem as FileBrowser. The editor expects its
+// document-engine assets at the origin root, while its Vite bundles are
+// relative to /editor; both forms are mapped into the embedded subtree.
+func registerDocumentEditorRoutes(router *http.ServeMux, baseURL string) {
+	if settings.Env.IsDevMode {
+		// In dev mode the editor is served from the submodule build output.
+		documentEditorFs = os.DirFS("../third_party/ranuts-document/dist")
+	} else {
+		var err error
+		documentEditorFs, err = fs.Sub(assetFs, "ranuts-document")
+		if err != nil {
+			return
+		}
+	}
+	if _, err := fs.Stat(documentEditorFs, "editor.html"); err != nil {
+		return
+	}
+	if baseURL == "" {
+		baseURL = "/"
+	}
+	router.HandleFunc("GET "+baseURL+"editor", documentEditorPageHandler)
+
+	for _, prefix := range []string{"assets", "sdkjs", "web-apps", "fonts", "icons", "libs", "ran-fonts", "ranui-iife", "social"} {
+		root := "/" + prefix + "/"
+		if prefix != "fonts" || !settings.Env.IsDevMode {
+			router.Handle(root, documentEditorStaticHandler(root, prefix))
+		}
+		if baseURL != "/" {
+			basePath := baseURL + prefix + "/"
+			router.Handle(basePath, documentEditorStaticHandler(basePath, prefix))
+		}
+	}
+	entries, _ := fs.ReadDir(documentEditorFs, ".")
+	for _, entry := range entries {
+		name := entry.Name()
+		ext := filepath.Ext(name)
+		if entry.IsDir() || (ext != ".css" && ext != ".js" && ext != ".json") || name == "sw.js" || strings.Contains(name, "service_worker") {
+			continue
+		}
+		root := "/" + name
+		router.HandleFunc("GET "+root, documentEditorFileHandler(name))
+		if baseURL != "/" {
+			router.HandleFunc("GET "+baseURL+name, documentEditorFileHandler(name))
+		}
+	}
+}
+
+func documentEditorPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.NotFound(w, r)
+		return
+	}
+	data, err := fs.ReadFile(documentEditorFs, "editor.html")
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache, private, max-age=0")
+	w.Header().Set("Cross-Origin-Opener-Policy", "same-origin")
+	w.Header().Set("Cross-Origin-Embedder-Policy", "require-corp")
+	_, _ = w.Write(data)
+}
+
+func documentEditorFileHandler(name string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		serveDocumentEditorAsset(w, r, name)
+	}
+}
+
+func documentEditorStaticHandler(urlPrefix, assetPrefix string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assetName := strings.TrimPrefix(r.URL.Path, urlPrefix)
+		if assetName == "" || strings.Contains(assetName, "..") || strings.ContainsRune(assetName, '\\') {
+			http.NotFound(w, r)
+			return
+		}
+		serveDocumentEditorAsset(w, r, filepath.ToSlash(filepath.Join(assetPrefix, assetName)))
+	})
+}
+
+func serveDocumentEditorAsset(w http.ResponseWriter, r *http.Request, name string) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		http.NotFound(w, r)
+		return
+	}
+	assetPath := filepath.ToSlash(name)
+	if strings.Contains(assetPath, "../") {
+		http.NotFound(w, r)
+		return
+	}
+	asset, err := documentEditorFs.Open(assetPath)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	defer asset.Close()
+	info, err := asset.Stat()
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Cache-Control", "public, max-age=86400")
+	w.Header().Set("Cross-Origin-Embedder-Policy", "require-corp")
+	if strings.HasSuffix(name, ".wasm.br") {
+		w.Header().Set("Content-Type", "application/wasm")
+		w.Header().Set("Content-Encoding", "br")
+	} else {
+		setContentType(w, name)
+	}
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", info.Size()))
+	if r.Method == http.MethodGet {
+		_, _ = io.Copy(w, asset)
+	}
+}
 
 type TemplateRenderer struct {
 	templates *template.Template
@@ -363,8 +483,14 @@ func setContentType(w http.ResponseWriter, path string) {
 		w.Header().Set("Content-Type", "font/woff2")
 	case ".webmanifest":
 		w.Header().Set("Content-Type", "application/manifest+json")
+	case ".wasm":
+		w.Header().Set("Content-Type", "application/wasm")
 	case ".json":
 		w.Header().Set("Content-Type", "application/json")
+	default:
+		if contentType := mime.TypeByExtension(ext); contentType != "" {
+			w.Header().Set("Content-Type", contentType)
+		}
 	}
 }
 
@@ -401,6 +527,10 @@ func rootFontHandler(w http.ResponseWriter, r *http.Request) {
 
 	fileContents, err := fs.ReadFile(assetFs, "fonts/"+assetPath)
 	if err != nil {
+		if documentEditorFs != nil {
+			serveDocumentEditorAsset(w, r, "fonts/"+assetPath)
+			return
+		}
 		http.NotFound(w, r)
 		return
 	}

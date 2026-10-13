@@ -27,7 +27,7 @@
   <StatusBar :class="{ moveWithSidebar: moveWithSidebar.shouldMove }" />
   <ContextMenu v-bind="contextMenuProps"></ContextMenu>
   <Tooltip />
-  <NextPrevious />
+  <NextPrevious v-if="!isDocumentEditor" />
   <PopupPreview v-if="popupEnabled" />
 </template>
 
@@ -100,7 +100,10 @@ export default {
       return getters.isLoggedIn() && getters.currentView() === "listingView" && !getters.isShare();
     },
     isOnlyOffice() {
-      return getters.currentView() === "onlyOfficeEditor";
+      return ['onlyOfficeEditor', 'documentEditor'].includes(getters.currentView());
+    },
+    isDocumentEditor() {
+      return getters.currentView() === 'documentEditor';
     },
     invalidShare() {
       return getters.isShare() && getters.isInvalidShare();

@@ -10,6 +10,7 @@
         'blocked': isBlocked(prompt),
         'prompt-open-flash': flashBorderIds[prompt.id],
         'editor-prompt': isEditorPrompt(prompt),
+        'office-editor-prompt': prompt.name === 'OfficeEditor',
       }"
       @mousedown="makeTopPrompt(prompt.id)"
       @contextmenu="isBlocked(prompt) && $event.preventDefault()"
@@ -78,6 +79,7 @@
       </div>
       <component
         :is="prompt.name"
+        :ref="el => setOfficeEditorRef(prompt, el)"
         v-bind="getPromptProps(prompt)"
       />
     </div>
@@ -85,6 +87,7 @@
 </template>
 
 <script>
+import { markRaw } from "vue";
 import Help from "./Help.vue";
 import Info from "./Info.vue";
 import Delete from "./Delete.vue";
@@ -123,6 +126,7 @@ import FileList from "./FileListing.vue";
 import Archive from "./Archive.vue";
 import Unarchive from "./Unarchive.vue";
 import OfficeDebug from "./OfficeDebug.vue";
+import DocumentEditor from "@/views/files/DocumentEditor.vue";
 import ThreeJSControls from "./ThreeJSControls.vue";
 import ActivityEventDetails from "./ActivityEventDetails.vue";
 import AnalyticsDiagnostic from "./AnalyticsDiagnostic.vue";
@@ -182,6 +186,7 @@ export default {
     Archive,
     Unarchive,
     OfficeDebug,
+    OfficeEditor: DocumentEditor,
     ThreeJSControls,
     ActivityEventDetails,
     AnalyticsDiagnostic,
@@ -199,6 +204,7 @@ export default {
   },
   data() {
     return {
+      officeEditors: markRaw(new Map()),
       dragOffsets: {},
       dragStarts: {},
       draggingIds: new Set(),
@@ -260,6 +266,11 @@ export default {
     for (const tid of Object.values(this.flashBorderTimers)) { clearTimeout(tid); }
   },
   methods: {
+    setOfficeEditorRef(prompt, instance) {
+      if (prompt.name !== "OfficeEditor") return;
+      if (instance) this.officeEditors.set(prompt.id, instance);
+      else this.officeEditors.delete(prompt.id);
+    },
     triggerPromptBorderFlash(id) {
       const timer = getObjectProperty(this.flashBorderTimers, id);
       if (timer) {
@@ -308,14 +319,16 @@ export default {
       return false;
     },
     isEditorPrompt(prompt) {
-      return prompt?.name === "analytics-diagnostic" || prompt?.name === "config-viewer" || prompt?.name === "user-defaults" || prompt?.name === "sidebar-link-defaults" || prompt?.name === "tool-access-defaults" || prompt?.name === "share-defaults" || prompt?.name === "sidebarLinks" || prompt?.name === "sidebarlinks" || prompt?.name === "user-edit-preferences" || prompt?.name === "user-edit-tools" || prompt?.name === "user-edit-sidebar-links";
+      return prompt?.name === "OfficeEditor" || prompt?.name === "analytics-diagnostic" || prompt?.name === "config-viewer" || prompt?.name === "user-defaults" || prompt?.name === "sidebar-link-defaults" || prompt?.name === "tool-access-defaults" || prompt?.name === "share-defaults" || prompt?.name === "sidebarLinks" || prompt?.name === "sidebarlinks" || prompt?.name === "user-edit-preferences" || prompt?.name === "user-edit-tools" || prompt?.name === "user-edit-sidebar-links";
     },
     ensureEditorPromptSize(id) {
       if (getObjectProperty(this.sizes, id)) {
         return;
       }
-      const width = Math.min(720, Math.round(window.innerWidth * 0.9));
-      const height = Math.min(Math.round(window.innerHeight * 0.65), Math.round(window.innerHeight * 0.8));
+      const prompt = this.prompts.find((item) => item.id === id);
+      const isOffice = prompt?.name === "OfficeEditor";
+      const width = Math.min(isOffice ? 1600 : 720, Math.round(window.innerWidth * (isOffice ? 0.96 : 0.9)));
+      const height = Math.min(Math.round(window.innerHeight * (isOffice ? 0.88 : 0.65)), Math.round(window.innerHeight * 0.8));
       this.sizes = setObjectProperty(this.sizes, id, { width, height });
     },
     getPromptProps(prompt) {
@@ -464,6 +477,10 @@ export default {
       // Find the prompt we're trying to close
       const promptToClose = state.prompts.find(p => p.id === id);
       if (!promptToClose) return;
+      if (promptToClose.name === "OfficeEditor" && this.officeEditors.has(id)) {
+        void this.officeEditors.get(id).close();
+        return;
+      }
       // Check if it's the upload prompt with active uploads
       if (promptToClose.name === "upload") {
         const hasActiveUploads = state.upload.isUploading;
@@ -880,6 +897,19 @@ export default {
 .floating-window.editor-prompt:not([style*="height"]) {
   height: min(65vh, 80vh);
   min-height: 320px;
+}
+
+.floating-window.office-editor-prompt {
+  min-width: min(96vw, 38rem);
+  min-height: min(88vh, 32rem);
+  padding-top: 3em;
+  box-sizing: border-box;
+}
+
+.floating-window.office-editor-prompt > :deep(.document-editor) {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
 }
 
 .floating-window > :deep(.card-actions) {

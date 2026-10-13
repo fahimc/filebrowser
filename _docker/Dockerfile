@@ -14,14 +14,21 @@ RUN go build -tags analytics,mupdf,musl -ldflags="-w -s \
 
 FROM node:jod-slim AS nbuild
 WORKDIR /build
-COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates \
-    && git config --global url."https://github.com/".insteadOf "git@github.com:" \
-    && git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+    && npm install --global pnpm@11.4.0
+COPY ./third_party/ranuts-document/ ./third_party/ranuts-document/
+COPY ./patches/ranuts-document-disable-embedded-service-worker.patch ./patches/ranuts-document-disable-embedded-service-worker.patch
+COPY ./scripts/patch-ranuts-document.sh ./scripts/patch-ranuts-document.sh
+RUN bash ./scripts/patch-ranuts-document.sh
+RUN cd third_party/ranuts-document && pnpm install --frozen-lockfile && pnpm run build
+COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN cd frontend && npm ci --maxsockets 1
 COPY ./frontend/ ./frontend/
+COPY ./scripts/copy-ranuts-document.sh ./scripts/copy-ranuts-document.sh
 WORKDIR /build/frontend
 RUN npm run build:docker
+WORKDIR /build
+RUN bash ./scripts/copy-ranuts-document.sh /build/backend/internal/web/dist
 
 FROM alpine:latest
 COPY --from=ffmpeg [ "/ffmpeg", "/ffprobe", "/usr/local/bin/" ]

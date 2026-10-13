@@ -15,3 +15,7 @@ backend/vendor/**
 frontend/dist/**
 frontend/node_modules/**
 frontend/pkg/**
+third_party/ranuts-document/.git
+third_party/ranuts-document/node_modules/**
+third_party/ranuts-document/packages/*/node_modules/**
+third_party/ranuts-document/dist/**

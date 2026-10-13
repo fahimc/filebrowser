@@ -28,6 +28,12 @@ This version is called "Quantum" because it packs tons of advanced features into
 
 The goal for this repo is to become the best open-source self-hosted file browsing application that exists -- **all for free**. This repo will always be free and open-source.
 
+## Browser Office editor
+
+DOCX, XLSX, PPTX, and supported PDF files open in the bundled browser editor. The editor runs in the user's browser; FileBrowser reads and saves documents through its existing file APIs, so edited files remain ordinary files in their configured folders. Creating new DOCX, XLSX, and PPTX files is available from the New menu.
+
+The editor assets are embedded in the FileBrowser build. A released FileBrowser executable therefore remains a single-file deployment with no Office service to install, though the bundled editor increases the executable size substantially. See [Office usage and build instructions](OFFICE.md) and [third-party notices](third_party/NOTICES.md).
+
 Ready to try it out? See [Getting Started Docs](https://filebrowserquantum.com/en/docs/getting-started/).
 
 ## How its different

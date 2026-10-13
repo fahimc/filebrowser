@@ -39,6 +39,26 @@
           @action="createFromTemplate(item.name)"
         />
         <action
+          icon="description"
+          :label="`${$t('files.newFile')} (DOCX)`"
+          @action="createOfficeDocument('docx')"
+        />
+        <action
+          icon="table_view"
+          :label="`${$t('files.newFile')} (XLSX)`"
+          @action="createOfficeDocument('xlsx')"
+        />
+        <action
+          icon="slideshow"
+          :label="`${$t('files.newFile')} (PPTX)`"
+          @action="createOfficeDocument('pptx')"
+        />
+        <action
+          icon="picture_as_pdf"
+          :label="`${$t('files.newFile')} (PDF)`"
+          @action="createOfficeDocument('pdf')"
+        />
+        <action
           icon="insert_drive_file"
           :label="$t('files.emptyFile')"
           @action="createEmptyFile"
@@ -846,6 +866,24 @@ export default {
         name: "newFile",
         props: {
           base: this.templateBase(),
+        },
+      });
+    },
+    createOfficeDocument(type) {
+      mutations.closeHovers();
+      const selected = this.firstSelected;
+      const current = state.req || {};
+      const base = this.templateBase() || {
+        path: current.type === "directory" ? current.path : url.getParentDir(current.path || "/"),
+        source: selected?.source || current.source || state.sources?.current || "",
+      };
+      mutations.showPrompt({
+        name: "OfficeEditor",
+        props: {
+          title: `${this.$t('files.newFile')} (${type.toUpperCase()})`,
+          newType: type,
+          source: base.source,
+          parentPath: base.path || "/",
         },
       });
     },

@@ -15,12 +15,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: frontend/.nvmrc
-      - name: Install dependencies and build frontend
-        run: npm i && npm run build
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.4.0
+      - name: Patch embedded editor for iframe hosting
+        run: bash ./scripts/patch-ranuts-document.sh
+      - name: Build embedded Office editor
+        run: pnpm install --frozen-lockfile && pnpm run build
+        working-directory: third_party/ranuts-document
+      - name: Build front end and package editor assets
+        run: npm ci && npm run build && bash ../scripts/copy-ranuts-document.sh
         working-directory: frontend
       - name: Install OS Requirements
         run: sudo apt update && sudo apt install -y upx build-essential musl-tools
@@ -39,6 +49,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.0.0
       - name: Set up Docker Buildx

@@ -222,6 +222,7 @@ func configureHTTPRouter(router, api, publicRoutes, publicApi *http.ServeMux) {
 	// Static assets
 	publicRoutes.Handle("GET /static/", http.HandlerFunc(staticAssetHandler))
 	router.HandleFunc("GET /favicon.svg", http.HandlerFunc(staticAssetHandler))
+	registerDocumentEditorRoutes(router, settings.Config.Http.BaseURL)
 
 	// Index and utility routes
 	router.HandleFunc(settings.Config.Http.BaseURL, withOrWithoutUser(indexHandler))

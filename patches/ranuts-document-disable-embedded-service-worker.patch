@@ -1,0 +1,81 @@
+diff --git a/index.ts b/index.ts
+index 704b861..2b3f938 100644
+--- a/index.ts
++++ b/index.ts
+@@ -184,8 +184,14 @@ void (async () => {
+     return;
+   }
+ 
+-  if (createNewOnLoad && !isEmbedded) {
+-    await onCreateNew(`.${newExt}`, { docId: savedParam || undefined });
++  if (createNewOnLoad) {
++    try {
++      await onCreateNew(`.${newExt}`, { docId: savedParam || undefined, recordHistory: !isEmbedded });
++      if (isEmbedded) window.parent.postMessage({ type: 'document:opened', payload: { readonly: isReadonly } }, String(params['embedOrigin'] || location.origin));
++    } catch (error) {
++      if (!isEmbedded) throw error;
++      window.parent.postMessage({ type: 'document:error', payload: { message: error instanceof Error ? error.message : String(error) } }, String(params['embedOrigin'] || location.origin));
++    }
+     return;
+   }
+ 
+@@ -219,7 +225,7 @@ void (async () => {
+ // "continue last time" line (public/history-recent.js) and /history.
+ 
+ // Register Service Worker for PWA
+-if ('serviceWorker' in navigator) {
++if (!isEmbedded && 'serviceWorker' in navigator) {
+   // Update policy lives in lib/sw-update.ts: a new build's worker waits until
+   // no document is open, then takes over and the page reloads once.
+   const controllerAtBoot = navigator.serviceWorker.controller;
+diff --git a/lib/document.ts b/lib/document.ts
+index a4dd61e..4071369 100644
+--- a/lib/document.ts
++++ b/lib/document.ts
+@@ -39,7 +39,7 @@ const fileInput = View('input')
+   .build() as HTMLInputElement;
+ document.body.appendChild(fileInput);
+ 
+-export const onCreateNew = async (ext: string, options?: { docId?: string }): Promise<void> => {
++export const onCreateNew = async (ext: string, options?: { docId?: string; recordHistory?: boolean }): Promise<void> => {
+   const operation = ++openOperation;
+   // Callers own the loading indicator (the control panel shows it around this
+   // call), so showing one here too would stack two of them.
+@@ -61,7 +61,9 @@ export const onCreateNew = async (ext: string, options?: { docId?: string }): Pr
+     if (operation !== mountedOperation) return;
+     // Recovery points from here on. A blank document is the case with the most
+     // to lose: there is no file on disk to fall back to at all.
+-    startDocumentSession({ title: fileName, origin: 'new', docId: options?.docId });
++    if (options?.recordHistory !== false) {
++      startDocumentSession({ title: fileName, origin: 'new', docId: options?.docId });
++    }
+   } catch (error) {
+     console.error('Error creating new document:', error);
+     // Ensure control panel is shown on error
+diff --git a/lib/embed-api.ts b/lib/embed-api.ts
+index af7a401..f510898 100644
+--- a/lib/embed-api.ts
++++ b/lib/embed-api.ts
+@@ -260,6 +260,9 @@ export function initEmbedApi(): void {
+   }
+ 
+   document.body.classList.add('embed-mode');
++  window.addEventListener('document:content-ready', () => {
++    postToParent('document:loaded', { readonly: getReadonlyMode() });
++  });
+   // Pushed, not polled: the host needs it to decide when to save (a tab
+   // switch, an idle timer) without exporting documents nobody touched.
+   onUnsavedChangesChange((dirty) => {
+diff --git a/public/sdkjs/common/AllFonts.js b/public/sdkjs/common/AllFonts.js
+index 8bdbd68..6417ae1 100644
+--- a/public/sdkjs/common/AllFonts.js
++++ b/public/sdkjs/common/AllFonts.js
+@@ -299,7 +299,7 @@ window["__fonts_infos"] = [
+ ["Asana Math",107,1,-1,-1,-1,-1,-1,-1],
+ ["ASCW3",103,0,-1,-1,-1,-1,-1,-1],
+ ["Caladea",111,0,110,0,108,0,109,0],
+-["Calibri",115,0,-1,-1,-1,-1,-1,-1],
++["Calibri",115,0,114,0,112,0,113,0],
+ ["Carlito",115,0,114,0,112,0,113,0],
+ ["Comic Sans MS",51,0,-1,-1,50,0,-1,-1],
+ ["Courier New",61,0,60,0,58,0,59,0],

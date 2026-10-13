@@ -2,7 +2,7 @@
   <div>
     <div v-if="loadingProgress < 100" class="progress-line" :style="{ width: `${loadingProgress}%`, ...moveWithSidebar }"></div>
     <errors v-if="error" :errorCode="error.status" />
-    <component v-else-if="currentViewLoaded" :is="currentView" :fbdata="req"></component>
+    <component v-else-if="currentViewLoaded" :is="currentView" :key="currentView === 'documentEditor' ? `${req.source}:${req.path}` : currentView" :fbdata="req"></component>
     <div v-else>
       <h2 class="message delayed">
         <LoadingSpinner size="medium" />
@@ -120,6 +120,7 @@ export default {
     ListingView,
     LoadingSpinner,
     Editor: createAsyncComponent(() => import('@/views/files/Editor.vue')),
+    DocumentEditor: createAsyncComponent(() => import('@/views/files/DocumentEditor.vue')),
     OnlyOfficeEditor: createAsyncComponent(() => import('@/views/files/OnlyOfficeEditor.vue')),
     EpubViewer: createAsyncComponent(() => import('@/views/files/EpubViewer.vue')),
     DocViewer: createAsyncComponent(() => import('@/views/files/DocViewer.vue')),

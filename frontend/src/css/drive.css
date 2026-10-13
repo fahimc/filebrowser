@@ -206,12 +206,18 @@ header.flexbar .search-bar-container .material-symbols {
 
 #sidebar .sidebar-link-button {
   min-height: 2.5rem;
+  height: auto;
+  flex-shrink: 0;
   margin: 0;
   padding: 0 0.75rem;
   border-radius: 999px;
   color: var(--textPrimary);
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+#sidebar .source-button:has(.usage-info) {
+  padding-bottom: 0.4rem;
 }
 
 #sidebar .sidebar-link-button.active,
