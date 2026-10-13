@@ -13,3 +13,9 @@ git clone --recurse-submodules <repository-url>
 ```
 
 See [`third_party/ranuts-document/LICENSE`](ranuts-document/LICENSE) and [`third_party/ranuts-document/NOTICE`](ranuts-document/NOTICE) for the complete upstream licensing terms and editor component notices.
+
+The Office release also supplies engine source archives alongside the FileBrowser/ranuts source archive:
+
+- [ONLYOFFICE sdkjs 9.3.0.133](https://github.com/ONLYOFFICE/sdkjs/tree/679a6d70ccb5487924f034cea089ff30daeeb7fd).
+- [ONLYOFFICE web-apps 9.3.0.133](https://github.com/ONLYOFFICE/web-apps/tree/3d7f2370c2a1043d4e7839f5942f096c491923ef).
+- [CryptPad x2t WebAssembly source and build scripts](https://github.com/cryptpad/onlyoffice-x2t-wasm/tree/742bf7e06fde1502c63dfe4aae1fe8c70272fc30), including its modified ONLYOFFICE core tree. The ranuts distribution supplies the compiled converter and identifies this upstream project in its NOTICE; it does not record a converter source commit or compiler pin, so this source snapshot is not claimed to reproduce that converter byte for byte.
