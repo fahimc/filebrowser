@@ -8,6 +8,15 @@
       :disabled="isDisabledMultiAction"
       @action="multiAction"
     />
+    <a class="drive-brand" href="/" aria-label="Drive home" @click.prevent="goHome">
+      <svg class="drive-brand__logo" viewBox="0 0 48 42" aria-hidden="true">
+        <path fill="#00832d" d="M15.1 2.2h10.2L10.2 28.4H0z" />
+        <path fill="#0066da" d="M10.2 28.4h30.5l-5.2 9H5z" />
+        <path fill="#ffba00" d="M25.3 2.2 48 41.5H37.6L15.1 2.2z" />
+        <path fill="#2684fc" d="M5 37.4 10.2 28.4h30.5l-5.2 9z" opacity=".9" />
+      </svg>
+      <span>Drive</span>
+    </a>
     <div class="search-bar-container"
          v-if="showSearch && !isSearchActive" @click="openSearch" >
       <i class="material-symbols">search</i>
@@ -151,6 +160,9 @@ export default {
     },
   },
   methods: {
+    goHome() {
+      void router.push("/");
+    },
     openSearch() {
       if (!state.isSearchActive) {
         mutations.closeHovers();

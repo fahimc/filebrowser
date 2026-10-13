@@ -1,12 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Background circle -->
-  <circle cx="16" cy="16" r="16" fill="#141D24"/>
-  
-  <!-- Back folder (orange, barely higher and left) -->
-  <path d="M5 8h6l2 2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z" 
-        fill="#FF9800"/>
-  
-  <!-- Front folder (blue, almost same position) -->
-  <path d="M6 9h6l2 2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z" 
-        fill="#2196F3"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <rect width="48" height="48" rx="12" fill="#fff"/>
+  <path fill="#00832d" d="M14.8 8h10L10.1 33.3H0z"/>
+  <path fill="#0066da" d="M10.1 33.3h32.3l-5.4 9.2H4.8z"/>
+  <path fill="#ffba00" d="M24.8 8 48 48h-10.8L14.8 8z"/>
 </svg>

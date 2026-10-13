@@ -53,9 +53,9 @@
     <transition v-if="shareInfo.shareType !== 'upload'" name="expand" @before-enter="beforeEnter" @enter="enter"
       @leave="leave">
       <div v-if="!hideSidebarFileActions && isListingView" class="card-wrapper">
-        <button type="button" @click="openContextMenu" aria-label="File-Actions" data-testid="file-actions-button" class="action file-actions">
+        <button type="button" @click="openContextMenu" :aria-label="$t('general.new', { suffix: '' })" data-testid="file-actions-button" class="action file-actions">
           <i class="material-symbols">add</i>
-          {{ $t("sidebar.fileActions") }}
+          <span>{{ $t("general.new", { suffix: "" }) }}</span>
         </button>
       </div>
     </transition>

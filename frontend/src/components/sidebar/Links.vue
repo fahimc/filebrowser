@@ -374,7 +374,7 @@ export default {
             continue;
           }
           defaultLinks.push({
-            name: sourceName,
+            name: defaultLinks.length === 0 ? "My Drive" : sourceName,
             category: "source",
             target: "/",
             icon: "",

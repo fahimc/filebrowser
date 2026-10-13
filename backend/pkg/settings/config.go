@@ -20,14 +20,13 @@ import (
 	"github.com/gtsteffaniak/filebrowser/backend/internal/database/users"
 	"github.com/gtsteffaniak/filebrowser/backend/internal/ffmpeg"
 	"github.com/gtsteffaniak/filebrowser/backend/internal/utils"
-	"github.com/gtsteffaniak/filebrowser/backend/internal/version"
 	goffmpeg "github.com/gtsteffaniak/go-ffmpeg"
 	"github.com/gtsteffaniak/go-logger/logger"
 )
 
 const (
 	defaultMinSearchLength     = 3
-	defaultFrontendDescription = "FileBrowser Quantum is a file manager for the web which can be used to manage files on your server"
+	defaultFrontendDescription = "A Google Drive inspired workspace for managing your files"
 )
 
 var Config Settings
@@ -288,11 +287,6 @@ func setupFrontend(generate bool) {
 	}
 	if !Config.Frontend.DisableDefaultLinks {
 		Config.Frontend.ExternalLinks = append(Config.Frontend.ExternalLinks, ExternalLink{
-			Text:  fmt.Sprintf("(%v)", version.Version),
-			Title: version.CommitSHA,
-			Url:   "https://github.com/gtsteffaniak/filebrowser/releases/",
-		})
-		Config.Frontend.ExternalLinks = append(Config.Frontend.ExternalLinks, ExternalLink{
 			Text: "Help",
 			Url:  "help prompt",
 		})
@@ -300,8 +294,8 @@ func setupFrontend(generate bool) {
 	if Config.Frontend.Description == "" {
 		Config.Frontend.Description = defaultFrontendDescription
 	}
-	Config.Frontend.Styling.LightBackground = FallbackColor(Config.Frontend.Styling.LightBackground, "#f5f5f5")
-	Config.Frontend.Styling.DarkBackground = FallbackColor(Config.Frontend.Styling.DarkBackground, "#141D24")
+	Config.Frontend.Styling.LightBackground = FallbackColor(Config.Frontend.Styling.LightBackground, "#f8fafd")
+	Config.Frontend.Styling.DarkBackground = FallbackColor(Config.Frontend.Styling.DarkBackground, "#202124")
 	var err error
 	if Config.Frontend.Styling.CustomCSS != "" {
 		Config.Frontend.Styling.CustomCSSRaw, err = readCustomCSS(Config.Frontend.Styling.CustomCSS)
@@ -914,7 +908,7 @@ func SetDefaults(generate bool) Settings {
 			},
 		},
 		Frontend: Frontend{
-			Name:        "FileBrowser Quantum",
+			Name:        "Google Drive",
 			Description: defaultFrontendDescription,
 		},
 		UserDefaults: UserDefaults{
