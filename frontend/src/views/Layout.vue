@@ -100,7 +100,7 @@ export default {
       return getters.isLoggedIn() && getters.currentView() === "listingView" && !getters.isShare();
     },
     isOnlyOffice() {
-      return ['onlyOfficeEditor', 'documentEditor'].includes(getters.currentView());
+      return getters.currentView() === 'onlyOfficeEditor';
     },
     isDocumentEditor() {
       return getters.currentView() === 'documentEditor';
