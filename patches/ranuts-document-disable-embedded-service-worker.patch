@@ -66,6 +66,19 @@ index af7a401..f510898 100644
    // Pushed, not polled: the host needs it to decide when to save (a tab
    // switch, an idle timer) without exporting documents nobody touched.
    onUnsavedChangesChange((dirty) => {
+diff --git a/lib/onlyoffice-editor.ts b/lib/onlyoffice-editor.ts
+index 17892ca..8c07df5 100644
+--- a/lib/onlyoffice-editor.ts
++++ b/lib/onlyoffice-editor.ts
+@@ -441,7 +441,7 @@ export function createEditorInstance(config: {
+ }
+ 
+ export async function loadEditorApi(): Promise<void> {
+-  if (!window.DocsAPI && /^\/editor(?:\.html)?\/?$/.test(location.pathname)) await waitForAppWorkerControl();
++  if (!window.DocsAPI && !isEmbedMode() && /^\/editor(?:\.html)?\/?$/.test(location.pathname)) await waitForAppWorkerControl();
+   return new Promise((resolve, reject) => {
+     // Check if already loaded
+     if (window.DocsAPI) {
 diff --git a/public/sdkjs/common/AllFonts.js b/public/sdkjs/common/AllFonts.js
 index 8bdbd68..6417ae1 100644
 --- a/public/sdkjs/common/AllFonts.js
