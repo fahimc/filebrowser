@@ -11,3 +11,36 @@ index af7a401..bc1c069 100644
            markDocumentSaved();
          }
          postToParent(
+diff --git a/lib/onlyoffice/guards/x2t-worker.ts b/lib/onlyoffice/guards/x2t-worker.ts
+--- a/lib/onlyoffice/guards/x2t-worker.ts
++++ b/lib/onlyoffice/guards/x2t-worker.ts
+@@ -122,6 +122,12 @@ class WorkerChannel {
+ 
+   private scheduleIdleTermination(): void {
+     if (this.idleTimer) clearTimeout(this.idleTimer);
++    // Embedded live sessions must still export a draft after disconnection.
++    // Retain their already loaded converter until the frame closes; creating
++    // another worker would require a network fetch after its idle timeout.
++    try {
++      if (new URLSearchParams(this.win.parent.location.search).get('embed') === '1') return;
++    } catch { /* Non-embedded cross-origin hosts retain the normal lifecycle. */ }
+     this.idleTimer = setTimeout(() => {
+       if (this.pending.size === 0) this.terminate();
+     }, IDLE_TERMINATE_MS);
+@@ -202,6 +208,6 @@ export function fontSources(win: FrameScope): FontSource[] {
+       // stream avoids an otherwise first-use network request during Save.
+       // Ordinary font streams remain URLs rather than copying their heaps.
+-      if (info.Name === 'ASCW3' && file.GetStreamIndex && win.AscFonts?.getFontStream) {
++      if ((info.Name === 'ASCW3' || !win.navigator.onLine) && file.GetStreamIndex && win.AscFonts?.getFontStream) {
+         try {
+           const stream = win.AscFonts.getFontStream(file.GetStreamIndex());
+           const { data, size } = stream;
+@@ -213,7 +219,7 @@ export function fontSources(win: FrameScope): FontSource[] {
+             ArrayBuffer.isView(data) &&
+             Number.isInteger(size) &&
+             size! > 0 &&
+-            size! <= 65536 &&
++            size! <= 16 * 1024 * 1024 &&
+             size! <= data.byteLength
+           ) {
+             source.bytes = new Uint8Array(data.buffer, data.byteOffset, size).slice();

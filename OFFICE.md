@@ -14,6 +14,8 @@ Autosave checkpoints the merged revision to the original ordinary file. Late arr
 
 This is Google Docs-style live editing using the bundled ONLYOFFICE engine. It does not provide Google Docs' full offline application, comments/history service, or Google account integration. Keep disconnected tabs open: unacknowledged edits are held in browser memory. **Download copy** preserves a local draft when a session expires or an external program changes the original file; conflicting filesystem writes are rejected. PDF support remains limited to the engine's supported annotations/forms. Supported session limits are 100 MiB per initial document, 64 devices, 128 active documents, and 32 MiB of incremental changes per session. Save and close all tabs periodically to start a fresh session.
 
+Embedded sessions retain the loaded converter worker for draft export while disconnected. Its memory is released when the editor frame closes; expect several hundred MiB per active editor tab.
+
 The collaboration coordinator is part of the same Go executable. HTTPS polling works through the Cloudflare Quick Tunnel without SSE or a separate document server. All devices must connect to the same running FileBrowser instance, which must remain online.
 
 ## Portable Windows build

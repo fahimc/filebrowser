@@ -74,6 +74,9 @@ try{
    expect(await model(late,kind)).toEqual(await model(a,kind));console.log('PASS late join');
    await expect.poll(()=>b.evaluate(()=>Object.keys(Array.from(window.frames).flatMap(w=>Array.from(w.frames)).find(w=>w.Asc?.editor).AscCommon.CollaborativeEditing.m_aForeignCursors||{}).length),{timeout:15000}).toBeGreaterThan(0);
    console.log('PASS remote cursor and participant presence');
+   // The upstream converter normally terminates after 30 seconds idle.
+   // An embedded session must retain enough state to export after that period.
+   await a.waitForTimeout(31000);
    await a.context().setOffline(true);
    const offline='Offline'+Date.now(),online='Online'+Date.now();
    await typeIntoDocument(a,kind,offline);

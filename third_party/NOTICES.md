@@ -6,7 +6,7 @@ FileBrowser bundles the browser editor built from [`ranuts/document`](https://gi
 
 The integration carries downstream source patches in [`patches/ranuts-document-disable-embedded-service-worker.patch`](../patches/ranuts-document-disable-embedded-service-worker.patch). It enables embedded new-document creation and readiness events without local document history, prevents the embedded iframe from registering a service worker against the FileBrowser origin, and maps Calibri's styled faces to the open Carlito faces. The patches are applied by the editor build scripts; the upstream source and its full `LICENSE` and `NOTICE` files are retained in the Git submodule.
 
-The additional [collaboration export patch](../patches/ranuts-document-preserve-collaboration-history.patch) keeps unsent native editor changes intact during checkpoint and draft exports.
+The additional [collaboration export patch](../patches/ranuts-document-preserve-collaboration-history.patch) keeps unsent native editor changes intact during checkpoint and draft exports, retains the embedded converter worker for offline draft exports, and passes already loaded font bytes when disconnected.
 
 When distributing a FileBrowser executable that contains this editor, distribute the corresponding source for the complete combined work under the applicable AGPL terms, including this repository, the pinned submodule source, and the downstream patch. A source checkout should be made with recursive submodules enabled:
 

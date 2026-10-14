@@ -95,6 +95,7 @@ export default {
       collaborationAttaching: false,
       activateAfterSave: false,
       copyCommandId: '',
+      destroyed: false,
     };
   },
   computed: {
@@ -144,6 +145,7 @@ export default {
     this.openExistingFile().catch((error) => this.showError(error));
   },
   beforeUnmount() {
+    this.destroyed=true;
     window.removeEventListener("message", this.onEditorMessage);
     window.removeEventListener("beforeunload", this.beforeUnload);
     this.removeNavigationGuard?.();
@@ -167,13 +169,18 @@ export default {
       return;
     },
     async startCollaboration(path) {
+      this.editorReady=false;
+      this.statusText='Loading document…';
+      if(this.bridgeReady)this.sendCommand('document:set-readonly',{readonly:true});
       await this.collaboration?.stop();
       this.collaboration = markRaw(new OfficeCollaboration({
         frame: this.$refs.editorFrame, source:this.saveSource, path,
         share:this.shareContext, edit:this.canEdit,
         onState:({connected,participants,revision,saved,error})=>{
+          const reconnected=connected && !this.connected;
           this.connected=connected;this.participants=participants;
-          if(!connected){this.statusText=`Reconnecting… ${error || ''}`;return;}
+          if(!connected){clearTimeout(this.saveTimer);this.statusText=`Reconnecting… ${error || ''}`;return;}
+          if(reconnected && this.dirty && !this.saving)this.scheduleSave();
           if(!this.saving && !this.dirty && revision<=saved)this.statusText=this.canEdit ? (saved>0 || this.createdInStorage ? 'All changes saved' : 'Ready') : 'View only';
           if(!this.saving && this.dirty && revision<=saved && !this.collaboration.outbox && !this.collaboration.hasLocalChanges()){
             this.dirty=false;this.statusText='All changes saved';
@@ -182,6 +189,7 @@ export default {
         onChange:()=>{if(this.canEdit){this.dirty=true;this.dirtyRevision++;if(!this.saving)this.scheduleSave();}},
       }));
       this.documentBuffer=await this.collaboration.join();
+      if(this.destroyed){await this.collaboration.stop();return;}
       this.documentOpened=false;
       this.editorReady=false;
       if(this.bridgeReady)this.openEditorBuffer();
@@ -240,10 +248,11 @@ export default {
       this.saveTimer = setTimeout(() => this.requestSave(), SAVE_DELAY_MS);
     },
     downloadCopy() {
+      clearTimeout(this.saveTimer);
       this.copyCommandId=this.sendCommand('document:save',{preserveChanges:true});
     },
     requestSave() {
-      if (!this.canEdit || (!this.dirty && !this.isNewDocument) || this.saving || !this.editorReady) return;
+      if (!this.canEdit || (!this.dirty && !this.isNewDocument) || this.saving || this.copyCommandId || !this.editorReady) return;
       if (this.isNewDocument && !this.targetPath) {
         const name = this.newFileName.trim();
         if (!name || /[\\/<>:"|?*]/.test(name) || !name.toLowerCase().endsWith(`.${this.newType.toLowerCase()}`)) {
