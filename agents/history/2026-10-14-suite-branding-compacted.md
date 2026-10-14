@@ -26,3 +26,8 @@ previous Photos/Studio prerequisite source so the branded app imports build from
 the pushed branch; unrelated preview files and concurrent Workspace Mail changes
 remain excluded. Existing executable releases and live installations are unchanged.
 GitHub Actions is disabled before publication; builds remain local.
+
+Source and main README branding pushed and remote SHA verified on drive-reskin:
+https://github.com/fahimc/filebrowser/commit/5171894f714ed8ab8fa37890021fcd20eb5c2fc4
+README local image targets verified in the staged Git tree before commit.
+Original EXE release assets unchanged; no Actions build was used.
