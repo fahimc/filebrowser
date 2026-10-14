@@ -13,12 +13,14 @@
       <strong v-else class="document-editor__title">{{ fileName }}</strong>
       <span class="document-editor__status" role="status">{{ statusText }}</span>
       <span v-if="collaboration" class="document-editor__presence" :title="participants.map(p => p.name).join(', ')">{{ connected ? 'Live' : 'Reconnecting…' }} · {{ participants.length }} {{ participants.length === 1 ? 'device' : 'devices' }}</span>
+      <button v-if="collaboration && canEdit" type="button" class="button button--flat" :disabled="!editorReady || saving || restorePending || restoringVersion" @click="openHistory">Version history</button>
+      <button v-if="restorePending" type="button" class="button" :disabled="Boolean(copyCommandId)" @click="confirmReload = true">Reload current version</button>
       <button v-if="collaboration && dirty" type="button" class="button button--flat" :disabled="!editorReady || saving || Boolean(copyCommandId)" @click="downloadCopy">Download copy</button>
       <a class="document-editor__legal" href="https://github.com/fahimc/filebrowser/blob/drive-reskin/third_party/NOTICES.md" target="_blank" rel="noopener noreferrer">Source &amp; licenses</a>
       <button
         type="button"
         class="button button--flat document-editor__save"
-        :disabled="!canEdit || (!dirty && !isNewDocument) || saving || !editorReady"
+        :disabled="!canEdit || restorePending || (!dirty && !isNewDocument) || saving || !editorReady"
         @click="requestSave"
       >
         {{ $t('general.save') }}
@@ -32,13 +34,22 @@
         {{ $t('general.close') }}
       </button>
     </div>
+    <div v-if="confirmReload" class="document-editor__restore-confirm" role="alertdialog" aria-label="Reload restored document">
+      <p>Reloading replaces this tab's unsaved draft with the current saved document. Download a copy first to keep your edits.</p>
+      <button type="button" class="button button--flat" :disabled="Boolean(copyCommandId)" @click="downloadCopy">Download copy</button>
+      <button type="button" class="button" :disabled="Boolean(copyCommandId)" @click="reloadRestored">Discard draft and reload</button>
+      <button type="button" class="button button--flat" @click="confirmReload = false">Cancel</button>
+    </div>
     <iframe
+      v-show="!historyVisible"
       ref="editorFrame"
       class="document-editor__frame"
       :src="editorUrl"
       :title="fileName"
       allow="clipboard-read; clipboard-write"
+      :inert="restorePending"
     />
+    <OfficeVersionHistory v-if="historyVisible" :controller="collaboration" :file-name="fileName" :restoring="restoringVersion" @close="closeHistory" @restore="restoreVersion" />
   </section>
 </template>
 
@@ -53,12 +64,14 @@ import { router } from "@/router";
 import { createBlankPDF } from "@/utils/office.js";
 import { OfficeCollaboration } from "@/utils/officeCollaboration.js";
 import { markRaw } from "vue";
+import OfficeVersionHistory from '@/components/office/OfficeVersionHistory.vue';
 
 const SAVE_DELAY_MS = 1800;
 const OFFICE_TYPES = new Set(["docx", "xlsx", "pptx", "pdf"]);
 
 export default {
   name: "documentEditor",
+  components:{OfficeVersionHistory},
   props: {
     fbdata: { type: Object, default: null },
     promptId: { type: [String, Number], default: null },
@@ -96,6 +109,10 @@ export default {
       activateAfterSave: false,
       copyCommandId: '',
       destroyed: false,
+      historyVisible: false,
+      restoringVersion: false,
+      restorePending: false,
+      confirmReload: false,
     };
   },
   computed: {
@@ -179,6 +196,7 @@ export default {
         onState:({connected,participants,revision,saved,error})=>{
           const reconnected=connected && !this.connected;
           this.connected=connected;this.participants=participants;
+          if(this.restorePending)return;
           if(!connected){clearTimeout(this.saveTimer);this.statusText=`Reconnecting… ${error || ''}`;return;}
           if(reconnected && this.dirty && !this.saving)this.scheduleSave();
           if(!this.saving && !this.dirty && revision<=saved)this.statusText=this.canEdit ? (saved>0 || this.createdInStorage ? 'All changes saved' : 'Ready') : 'View only';
@@ -187,6 +205,7 @@ export default {
           }
         },
         onChange:()=>{if(this.canEdit){this.dirty=true;this.dirtyRevision++;if(!this.saving)this.scheduleSave();}},
+        onRestored:()=>this.onRemoteRestore(),
       }));
       this.documentBuffer=await this.collaboration.join();
       if(this.destroyed){await this.collaboration.stop();return;}
@@ -233,6 +252,7 @@ export default {
       } else if (type === "document:saved") {
         if(this.copyCommandId && id===this.copyCommandId){
           this.copyCommandId='';
+          if(this.restorePending)this.sendCommand('document:set-readonly',{readonly:true});
           const href=URL.createObjectURL(payload.file);
           const link=document.createElement('a');link.href=href;link.download=this.fileName;link.click();
           setTimeout(()=>URL.revokeObjectURL(href),1000);
@@ -240,19 +260,55 @@ export default {
           this.persistDocument(payload).catch((error) => this.showError(error));
         }
       } else if (type === "document:error") {
+        if(this.copyCommandId && id===this.copyCommandId){this.copyCommandId='';if(this.restorePending)this.sendCommand('document:set-readonly',{readonly:true});}
         this.showError(new Error(payload.message || "Could not export document"));
       }
     },
     scheduleSave() {
       clearTimeout(this.saveTimer);
+      if(this.restorePending)return;
       this.saveTimer = setTimeout(() => this.requestSave(), SAVE_DELAY_MS);
+    },
+    async openHistory(){
+      if(!await this.flushSave())return;
+      this.sendCommand('document:set-readonly',{readonly:true});
+      this.historyVisible=true;
+    },
+    closeHistory(){this.historyVisible=false;if(!this.restorePending)this.sendCommand('document:set-readonly',{readonly:!this.canEdit});},
+    async restoreVersion(version){
+      this.restoringVersion=true;
+      try{
+        if(!await this.flushSave())throw new Error('Save the current edits before restoring a version.');
+        await this.collaboration.prepareCheckpoint();
+        await this.collaboration.request('history-restore',{version:version.id,digest:version.digest,lease:this.collaboration.lease,revision:this.collaboration.checkpointRevision});
+        this.collaboration.cancelCheckpoint();this.historyVisible=false;
+        await this.reloadRestored();
+        notify.showSuccess('Version restored');
+      }catch(error){this.showError(error);}finally{this.restoringVersion=false;}
+    },
+    onRemoteRestore(){
+      clearTimeout(this.saveTimer);
+      this.closeHistory();
+      if(this.dirty || this.collaboration.outbox || this.collaboration.hasLocalChanges() || this.saving){
+        this.restorePending=true;this.dirty=true;this.saving=false;this.statusText='A version was restored on another device. Download your draft before reloading.';
+        this.sendCommand('document:set-readonly',{readonly:true});
+        this.collaboration.cancelCheckpoint();this.completeSave?.(false);this.completeSave=null;
+      }else{void this.reloadRestored().catch(error=>this.showError(error));}
+    },
+    async reloadRestored(){
+      this.confirmReload=false;this.restorePending=false;this.dirty=false;this.editorDirty=false;this.saving=false;
+      clearTimeout(this.saveTimer);clearTimeout(this.saveTimeout);
+      await this.startCollaboration(this.isNewDocument ? this.targetPath : this.file.path);
     },
     downloadCopy() {
       clearTimeout(this.saveTimer);
+      // The vendor exporter refuses a restricted model. Keep the retired
+      // session paused and the frame inert while exporting its private draft.
+      if(this.restorePending)this.sendCommand('document:set-readonly',{readonly:false});
       this.copyCommandId=this.sendCommand('document:save',{preserveChanges:true});
     },
     requestSave() {
-      if (!this.canEdit || (!this.dirty && !this.isNewDocument) || this.saving || this.copyCommandId || !this.editorReady) return;
+      if (!this.canEdit || this.restorePending || (!this.dirty && !this.isNewDocument) || this.saving || this.copyCommandId || !this.editorReady) return;
       if (this.isNewDocument && !this.targetPath) {
         const name = this.newFileName.trim();
         if (!name || /[\\/<>:"|?*]/.test(name) || !name.toLowerCase().endsWith(`.${this.newType.toLowerCase()}`)) {
@@ -421,6 +477,9 @@ export default {
   font-size: 0.8rem;
   white-space: nowrap;
 }
+
+.document-editor__restore-confirm{padding:1rem;background:var(--panel-bg);border-bottom:1px solid var(--divider);font-size:.9rem}
+.document-editor__restore-confirm button{margin-right:.5rem}
 
 .document-editor__legal {
   color: var(--textSecondary);

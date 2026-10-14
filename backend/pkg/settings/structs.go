@@ -70,11 +70,13 @@ type Server struct {
 	DisableTypeDetectionByHeader bool           `json:"disableTypeDetectionByHeader"`                                  // disable type detection by header, useful if filesystem is slow.
 	Logging                      []LogConfig    `json:"logging" yaml:"logging"`
 	Sources                      []*Source      `json:"sources" validate:"required,dive"`
-	CacheDir                     string         `json:"cacheDir"`        // path to the cache directory, used for thumbnails and other cached files
-	CacheDirCleanup              bool           `json:"cacheDirCleanup"` // whether to automatically cleanup the cache directory. Note: docker must also mount a persistent volume to persist the cache (default: false)
-	MaxArchiveSizeGB             int64          `json:"maxArchiveSize"`  // maximum archive/unarchive size in GB. 0 means no limit. (default: 20)
-	Filesystem                   Filesystem     `json:"filesystem"`      // filesystem settings
-	IndexSqlConfig               IndexSqlConfig `json:"indexSqlConfig"`  // Index database SQL configuration
+	CacheDir                     string         `json:"cacheDir"`                                      // path to the cache directory, used for thumbnails and other cached files
+	CacheDirCleanup              bool           `json:"cacheDirCleanup"`                               // whether to automatically cleanup the cache directory. Note: docker must also mount a persistent volume to persist the cache (default: false)
+	OfficeHistoryDir             string         `json:"officeHistoryDir"`                              // persistent version snapshots; defaults beside the settings database
+	OfficeHistoryLimit           int            `json:"officeHistoryLimit" validate:"gte=0,lte=10000"` // retained automatic savepoints per document; 0 keeps all, named versions are retained
+	MaxArchiveSizeGB             int64          `json:"maxArchiveSize"`                                // maximum archive/unarchive size in GB. 0 means no limit. (default: 20)
+	Filesystem                   Filesystem     `json:"filesystem"`                                    // filesystem settings
+	IndexSqlConfig               IndexSqlConfig `json:"indexSqlConfig"`                                // Index database SQL configuration
 	// not exposed to config
 	SourceMap    map[string]*Source `json:"-" validate:"omitempty"` // uses realpath as key
 	NameToSource map[string]*Source `json:"-" validate:"omitempty"` // uses name as key

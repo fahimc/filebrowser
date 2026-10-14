@@ -9,6 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -17,6 +19,7 @@ import (
 
 var ErrConflict = errors.New("collaboration state changed; synchronize before saving")
 var ErrSession = errors.New("document session expired; keep this tab open and download your draft before reopening")
+var ErrRestored = errors.New("a previous version was restored; reload the current document, preserving any unsaved draft")
 
 type Participant struct {
 	ID   string    `json:"id"`
@@ -29,6 +32,7 @@ type Event struct {
 	Revision int64             `json:"revision"`
 	Type     string            `json:"type"`
 	Client   string            `json:"client"`
+	Author   string            `json:"author,omitempty"`
 	Changes  []json.RawMessage `json:"changes,omitempty"`
 	Extra    json.RawMessage   `json:"extra,omitempty"`
 	Cursor   string            `json:"cursor,omitempty"`
@@ -342,7 +346,7 @@ func (m *Manager) Change(path, roomID, client, batch, lease string, changes []js
 	r.revision++
 	r.sequence++
 	r.bytes += size
-	r.events = append(r.events, Event{Seq: r.sequence, Revision: r.revision, Type: "changes", Client: client, Changes: changes, Extra: extra})
+	r.events = append(r.events, Event{Seq: r.sequence, Revision: r.revision, Type: "changes", Client: client, Author: r.clients[client].Name, Changes: changes, Extra: extra})
 	r.batches[client+":"+batch] = r.revision
 	if err := m.persist(r); err != nil {
 		delete(r.batches, client+":"+batch)
@@ -398,6 +402,9 @@ func (m *Manager) Release(path, roomID, client, lease string) error {
 // snapshot cannot race a change batch. The supplied writer retains FileBrowser's
 // normal quota, permissions and write behavior.
 func (m *Manager) Checkpoint(path, roomID, client, lease string, revision int64, write func() error) error {
+	return m.CheckpointWithHistory(path, roomID, client, lease, revision, func(_ []byte, _ []string) error { return write() })
+}
+func (m *Manager) CheckpointWithHistory(path, roomID, client, lease string, revision int64, write func([]byte, []string) error) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	r, err := m.get(path, roomID, client)
@@ -417,7 +424,20 @@ func (m *Manager) Checkpoint(path, roomID, client, lease string, revision int64,
 	if fingerprint(current) != r.digest {
 		return fmt.Errorf("file changed outside this session; download your draft before reopening")
 	}
-	if err = write(); err != nil {
+	if revision == r.saved {
+		r.lease = ""
+		r.leaseOwner = ""
+		return nil
+	}
+	authors := []string{}
+	seen := map[string]bool{}
+	for _, e := range r.events {
+		if e.Type == "changes" && e.Revision > r.saved && e.Author != "" && !seen[e.Author] {
+			authors = append(authors, e.Author)
+			seen[e.Author] = true
+		}
+	}
+	if err = write(current, authors); err != nil {
 		return err
 	}
 	current, err = os.ReadFile(path)
@@ -432,6 +452,51 @@ func (m *Manager) Checkpoint(path, roomID, client, lease string, revision int64,
 	r.lease = ""
 	r.leaseOwner = ""
 	return nil
+}
+
+// Restore takes the same save lease as checkpointing, and retires the old
+// session so its clients cannot overwrite the restored file from stale models.
+func (m *Manager) Restore(path, roomID, client, lease string, revision int64, write func([]byte) error) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	r, err := m.get(path, roomID, client)
+	if err != nil {
+		return err
+	}
+	if !r.clients[client].Edit {
+		return os.ErrPermission
+	}
+	if r.leaseOwner != client || lease == "" || r.lease != lease || revision != r.revision || r.saved != r.revision {
+		return ErrConflict
+	}
+	current, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	if fingerprint(current) != r.digest {
+		return fmt.Errorf("file changed outside this session; download your draft before reopening")
+	}
+	if err = write(current); err != nil {
+		return err
+	}
+	m.removeJournal(path)
+	delete(m.rooms, path)
+	return nil
+}
+func (m *Manager) ActiveUnder(path string, isDir bool) bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, r := range m.rooms {
+		m.expire(r)
+		if len(r.clients) == 0 {
+			continue
+		}
+		relative, err := filepath.Rel(path, r.path)
+		if err == nil && (relative == "." || (isDir && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator)))) {
+			return true
+		}
+	}
+	return false
 }
 func (m *Manager) Leave(path, roomID, client string) error {
 	m.mu.Lock()

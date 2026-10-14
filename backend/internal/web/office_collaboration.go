@@ -1,13 +1,12 @@
 package web
 
 import (
-	"context"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -15,6 +14,7 @@ import (
 	"sync"
 
 	"github.com/gtsteffaniak/filebrowser/backend/internal/officecollab"
+	"github.com/gtsteffaniak/filebrowser/backend/internal/officehistory"
 	"github.com/gtsteffaniak/filebrowser/backend/internal/state"
 	"github.com/gtsteffaniak/filebrowser/backend/internal/utils"
 	"github.com/gtsteffaniak/filebrowser/backend/pkg/indexing"
@@ -105,7 +105,7 @@ func officeStatus(err error) int {
 	if errors.Is(err, os.ErrNotExist) {
 		return 404
 	}
-	if errors.Is(err, officecollab.ErrConflict) || errors.Is(err, officecollab.ErrSession) || strings.Contains(err.Error(), "outside this session") {
+	if errors.Is(err, officecollab.ErrConflict) || errors.Is(err, officecollab.ErrSession) || errors.Is(err, officecollab.ErrRestored) || errors.Is(err, officehistory.ErrChanged) || strings.Contains(err.Error(), "outside this session") {
 		return 409
 	}
 	return 400
@@ -116,7 +116,16 @@ func officeHandler(w http.ResponseWriter, r *http.Request, d *Context) (int, err
 		return officeStatus(err), err
 	}
 	action := r.PathValue("action")
+	configureOfficeHistory()
+	if strings.HasPrefix(action, "history-") {
+		return officeHistoryAction(w, r, d, path, edit)
+	}
 	if action == "join" {
+		if edit {
+			if _, err = officeVersions.List(path); err != nil {
+				return officeStatus(err), err
+			}
+		}
 		officeSessions.SetJournalDir(filepath.Join(settings.Config.Server.CacheDir, "office-sessions"))
 		name := "Guest"
 		if d.User != nil {
@@ -143,6 +152,13 @@ func officeHandler(w http.ResponseWriter, r *http.Request, d *Context) (int, err
 		if err = json.NewDecoder(io.LimitReader(r.Body, 5<<20)).Decode(&req); err != nil {
 			return 400, err
 		}
+	}
+	if req.Room != "" && officeVersions.Restored(path, req.Room) {
+		if action == "leave" {
+			officeOwners.Delete(req.Room + ":" + req.Client)
+			return RenderJSON(w, r, map[string]bool{"ok": true})
+		}
+		return 409, officecollab.ErrRestored
 	}
 	if action == "resume" {
 		officeSessions.SetJournalDir(filepath.Join(settings.Config.Server.CacheDir, "office-sessions"))
@@ -193,23 +209,23 @@ func officeHandler(w http.ResponseWriter, r *http.Request, d *Context) (int, err
 		err = officeSessions.Leave(path, req.Room, req.Client)
 		officeOwners.Delete(req.Room + ":" + req.Client)
 	case "checkpoint":
-		rec := httptest.NewRecorder()
-		writeReq := r.WithContext(context.WithValue(r.Context(), officeWriteKey{}, true))
-		err = officeSessions.Checkpoint(path, req.Room, req.Client, req.Lease, req.Revision, func() error {
-			var status int
-			var writeErr error
-			if d.Share.Hash != "" {
-				status, writeErr = publicPutHandler(rec, writeReq, d)
-			} else {
-				status, writeErr = resourcePutHandler(rec, writeReq, d)
+		body, readErr := io.ReadAll(io.LimitReader(r.Body, officehistory.MaxDocumentBytes+1))
+		if readErr != nil {
+			return 400, readErr
+		}
+		if len(body) > officehistory.MaxDocumentBytes {
+			return 413, fmt.Errorf("document exceeds the 100 MiB history limit")
+		}
+		r.Body = io.NopCloser(bytes.NewReader(body))
+		err = officeSessions.CheckpointWithHistory(path, req.Room, req.Client, req.Lease, req.Revision, func(current []byte, authors []string) error {
+			if len(authors) == 0 {
+				authors = []string{officeAuthor(d)}
 			}
-			if writeErr != nil {
-				return writeErr
+			commitErr := officeVersions.Commit(path, current, body, authors, req.Room, req.Revision, "", "", func(data []byte) error { return officeWriteBytes(r, d, data) })
+			if errors.Is(commitErr, officehistory.ErrDeferred) {
+				return nil
 			}
-			if status >= 400 {
-				return fmt.Errorf("file save failed (%d)", status)
-			}
-			return nil
+			return commitErr
 		})
 		if err == nil {
 			return RenderJSON(w, r, map[string]int64{"saved": req.Revision})

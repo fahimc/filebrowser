@@ -748,6 +748,8 @@ func ResourcePostHandler(w http.ResponseWriter, r *http.Request, d *Context) (in
 
 	// get scoped path
 	realPath, _, _ := idx.GetRealPath(fullIndexPath)
+	_, existingErr := os.Stat(realPath)
+	historyNewFile := os.IsNotExist(existingErr)
 
 	if d.Share.Hash == "" {
 		filePerms, permErr := effectiveFilePerms(d, source)
@@ -762,6 +764,14 @@ func ResourcePostHandler(w http.ResponseWriter, r *http.Request, d *Context) (in
 
 	if !state.AccessPermitted(idx.Path, utils.IndexPathFromNormalized(fullIndexPath, true), filePermUser.Username) {
 		return http.StatusForbidden, fmt.Errorf("access denied to path %s", path)
+	}
+	if !isDir && officeSessions.ActiveUnder(realPath, false) {
+		return http.StatusLocked, fmt.Errorf("file is being edited in a live Office session")
+	}
+	if !isDir && !historyNewFile && r.URL.Query().Get("override") == "true" {
+		if historyErr := officeBeforeReplace(realPath); historyErr != nil {
+			return officeStatus(historyErr), historyErr
+		}
 	}
 
 	// Check for file/folder conflicts before creation
@@ -984,6 +994,9 @@ func ResourcePostHandler(w http.ResponseWriter, r *http.Request, d *Context) (in
 				return renderQuotaError(w, r, commitErr)
 			}
 			quotaReserved = false
+			if historyNewFile {
+				officeCreated(realPath, d)
+			}
 			activity.RecordUpload(r, toActor(d), source, path, false)
 			activeUploadSessions.release(realPath, sessionID)
 			abandonSession = false
@@ -1012,6 +1025,9 @@ func ResourcePostHandler(w http.ResponseWriter, r *http.Request, d *Context) (in
 			return ErrToStatus(err), err
 		}
 		activity.RecordUpload(r, toActor(d), source, path, false)
+		if historyNewFile {
+			officeCreated(realPath, d)
+		}
 		return http.StatusOK, nil
 	}
 
@@ -1100,6 +1116,9 @@ func ResourcePostHandler(w http.ResponseWriter, r *http.Request, d *Context) (in
 	}
 	quotaReserved = false
 	activity.RecordUpload(r, toActor(d), source, path, false)
+	if historyNewFile {
+		officeCreated(realPath, d)
+	}
 	abandonSession = false
 	return http.StatusOK, nil
 }
@@ -1211,7 +1230,7 @@ func resourcePutHandler(w http.ResponseWriter, r *http.Request, d *Context) (int
 			return http.StatusLocked, fmt.Errorf("file is being edited in a live Office session; reopen it in the current editor before saving")
 		}
 	}
-	return putResourceWithQuota(w, r, d, source, fullIndexPath)
+	return putResourceWithHistory(w, r, d, source, fullIndexPath)
 }
 
 // publicPutHandler handles the PUT request for a public share.
@@ -1257,7 +1276,7 @@ func publicPutHandler(w http.ResponseWriter, r *http.Request, d *Context) (int, 
 			return http.StatusLocked, fmt.Errorf("file is being edited in a live Office session")
 		}
 	}
-	return putResourceWithQuota(w, r, d, sourceName, resolvedPath)
+	return putResourceWithHistory(w, r, d, sourceName, resolvedPath)
 }
 
 // resourcePatchHandler performs a patch operation (e.g., move, copy, rename) on resources.
@@ -1739,7 +1758,9 @@ func patchAction(ctx context.Context, params patchActionParams) error {
 
 		// delete thumbnails
 		preview.DelThumbs(ctx, *fileInfo)
-		err = files.MoveResource(params.isSrcDir, params.srcIndex, params.dstIndex, params.src, params.dst)
+		err = officeMove(params.src, params.dst, params.isSrcDir, func() error {
+			return files.MoveResource(params.isSrcDir, params.srcIndex, params.dstIndex, params.src, params.dst)
+		})
 		if err != nil {
 			return err
 		}

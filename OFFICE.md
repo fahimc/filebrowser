@@ -12,11 +12,29 @@ Open the same file from two browsers using the same server URL. Each device join
 
 Autosave checkpoints the merged revision to the original ordinary file. Late arrivals replay the session's changes. Brief network disconnections retain edits in the open tab and retry after reconnect; acknowledged changes have a private recovery journal that lets existing tabs resume after a server restart. The journal is temporary recovery data in `cache/office-sessions`, protected from FileBrowser file access, and must stay with the portable settings/cache when moving an active installation.
 
-This is Google Docs-style live editing using the bundled ONLYOFFICE engine. It does not provide Google Docs' full offline application, comments/history service, or Google account integration. Keep disconnected tabs open: unacknowledged edits are held in browser memory. **Download copy** preserves a local draft when a session expires or an external program changes the original file; conflicting filesystem writes are rejected. PDF support remains limited to the engine's supported annotations/forms. Supported session limits are 100 MiB per initial document, 64 devices, 128 active documents, and 32 MiB of incremental changes per session. Save and close all tabs periodically to start a fresh session.
+This is Google Docs-style live editing using the bundled ONLYOFFICE engine. It does not provide Google Docs' full offline application, comments service, or Google account integration. Keep disconnected tabs open: unacknowledged edits are held in browser memory. **Download copy** preserves a local draft when a session expires or an external program changes the original file; conflicting filesystem writes are rejected. PDF support remains limited to the engine's supported annotations/forms. Supported session limits are 100 MiB per initial document, 64 devices, 128 active documents, and 32 MiB of incremental changes per session. Save and close all tabs periodically to start a fresh session.
 
 Embedded sessions retain the loaded converter worker for draft export while disconnected. Its memory is released when the editor frame closes; expect several hundred MiB per active editor tab.
 
 The collaboration coordinator is part of the same Go executable. HTTPS polling works through the Cloudflare Quick Tunnel without SSE or a separate document server. All devices must connect to the same running FileBrowser instance, which must remain online.
+
+## Document version history
+
+In an editable document, choose **Version history**. The timeline shows dated savepoints and their contributing editors. Select a version to view a read-only snapshot, download its original Office file, or restore it. **Name this version** pins a savepoint; the named-only filter makes approved drafts easy to find. Up to 40 named versions are supported per document. Removing a name makes that version eligible for normal automatic retention again.
+
+Autosaves in the same live session are grouped into five-minute savepoints. Naming the current version stops that group from being updated, so the next edit creates a separate version. All savepoints are retained by default. Restoring creates a new history entry and preserves the previous saved document. Clean open devices reload the restored file; a device with unsaved edits keeps a restricted draft with **Download copy** and **Reload current version** controls. Stale sessions cannot overwrite the restored file, including after a server restart.
+
+Snapshots are ordinary DOCX, XLSX, PPTX or PDF files with JSON metadata in `.filebrowser-history`, beside the settings database. This persistent directory is separate from disposable `cache/office-sessions`. Keep it with the settings database when moving the portable installation. A single executable still runs the whole service. No document contents enter the settings database. History storage is excluded from FileBrowser access even when a source contains it; viewing history requires current edit permission and source/share access.
+
+Optional server settings:
+
+```yaml
+server:
+  officeHistoryDir: "D:/FileBrowser-data/history" # defaults beside the settings database
+  officeHistoryLimit: 0 # retain all automatic savepoints; e.g. 100 retains the latest 100
+```
+
+The original snapshot and named versions are preserved when automatic retention is limited. FileBrowser moves and renames preserve a document's history; close its live editor tabs before moving it or its folder. A newly created FileBrowser file gets a fresh history identity even when reusing a deleted filename. History begins when this feature first observes a document; earlier edits cannot be reconstructed. External Windows edits are captured when the app next observes the file, so unobserved intermediate external writes have no snapshot. Current file permissions apply to historical versions. History supports files up to 100 MiB and whole-document previews; per-character differences, comments and Google account integration are not included.
 
 ## Portable Windows build
 
@@ -49,6 +67,7 @@ The integrated browser check uses real, disposable sample files and checks Offic
 python scripts/create-office-fixtures.py I:/Projects/filebrowser-office-preview/files
 node scripts/office-smoke.mjs http://127.0.0.1:8791 I:/Projects/filebrowser-office-preview/files I:/Projects/filebrowser-office-preview/screenshots
 node scripts/office-collaboration-smoke.mjs http://127.0.0.1:8791 I:/Projects/filebrowser-office-preview/files I:/Projects/filebrowser-office-preview/collaboration-screenshots
+node scripts/office-history-smoke.mjs http://127.0.0.1:8791 I:/Projects/filebrowser-office-preview/files I:/Projects/filebrowser-office-preview/history-screenshots
 ```
 
 The sample generator uses `python-docx`, `openpyxl`, `python-pptx`, and `reportlab`, only for test fixtures. It leaves existing files intact.

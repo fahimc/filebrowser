@@ -26,8 +26,14 @@ func AccessPermitted(sourcePath string, indexPath utils.IndexPath, username stri
 	if resolved, err := filepath.EvalSymlinks(candidate); err == nil {
 		candidate = resolved
 	}
-	if relative, err := filepath.Rel(journalRoot, candidate); err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-		return false
+	for _, privateRoot := range []string{journalRoot, settings.OfficeHistoryDirectory()} {
+		privateRoot, _ = filepath.Abs(privateRoot)
+		if resolved, err := filepath.EvalSymlinks(privateRoot); err == nil {
+			privateRoot = resolved
+		}
+		if relative, err := filepath.Rel(privateRoot, candidate); err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+			return false
+		}
 	}
 	if accessDb == nil {
 		return true

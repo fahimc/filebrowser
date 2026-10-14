@@ -140,3 +140,37 @@ func TestEditingRangeLocks(t *testing.T) {
 		t.Fatal("editing lock was not released")
 	}
 }
+func TestHistoryRestoreRetiresSessionAndRequiresCheckpoint(t *testing.T) {
+	m, path, a, b := fixture(t)
+	lease, _ := m.Acquire(path, a.Room, a.Client, 0)
+	if _, err := m.Change(path, a.Room, a.Client, "change", lease, []json.RawMessage{json.RawMessage(`"edit"`)}, nil); err != nil {
+		t.Fatal(err)
+	}
+	lease, _ = m.Acquire(path, a.Room, a.Client, 1)
+	if err := m.Restore(path, a.Room, a.Client, lease, 1, func([]byte) error { t.Fatal("unsaved revision restored"); return nil }); !errors.Is(err, ErrConflict) {
+		t.Fatal(err)
+	}
+	if err := m.Checkpoint(path, a.Room, a.Client, lease, 1, func() error { return os.WriteFile(path, []byte("current saved"), 0600) }); err != nil {
+		t.Fatal(err)
+	}
+	lease, _ = m.Acquire(path, a.Room, a.Client, 1)
+	if err := m.Restore(path, a.Room, a.Client, lease, 1, func(current []byte) error {
+		if string(current) != "current saved" {
+			t.Fatal("missing pre-restore version")
+		}
+		return os.WriteFile(path, []byte("restored ordinary file"), 0600)
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := m.Sync(path, b.Room, b.Client, 0); !errors.Is(err, ErrSession) {
+		t.Fatal("stale device session remained writable", err)
+	}
+	next, err := m.Join(path, "Alice", true)
+	if err != nil || next.Room == a.Room {
+		t.Fatal(next, err)
+	}
+	baseline, _ := m.Base(path, next.Room, next.Client)
+	if string(baseline) != "restored ordinary file" {
+		t.Fatal("new session did not load restored bytes")
+	}
+}

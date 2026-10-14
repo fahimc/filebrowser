@@ -6,8 +6,8 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // Native ONLYOFFICE changes carry object positions and transforms. They are
 // merged by the SDK, rather than replacing the other device's entire file.
 export class OfficeCollaboration {
-  constructor({ frame, source, path, share, edit, onState, onChange }) {
-    Object.assign(this, { frame, source, path, share, edit, onState, onChange });
+  constructor({ frame, source, path, share, edit, onState, onChange, onRestored }) {
+    Object.assign(this, { frame, source, path, share, edit, onState, onChange, onRestored });
     this.session = null;
     this.sequence = 0;
     this.revision = 0;
@@ -81,6 +81,7 @@ export class OfficeCollaboration {
     this.win.document.addEventListener('keydown', this.inputListener, true);
     this.win.document.addEventListener('input', this.inputListener, true);
     co.askSaveChanges = callback => {
+      if(this.pausedForRestore){callback({saveLock:true});return;}
       this.tasks = this.tasks.then(async()=>{
         try {
           while(this.checkpointing && !this.stopped)await delay(100);
@@ -225,10 +226,16 @@ export class OfficeCollaboration {
     }catch(error){this.connectionError(error);}finally{this.sending=false;}
   }
   connectionError(error) {
+    if(/a previous version was restored/i.test(error.message)){
+      this.pausedForRestore=true;clearInterval(this.timer);
+      if(this.win){this.win.AscCommon.History.CanNotAddChanges=false;this.api.CoAuthoringApi.onUnSaveLock?.();this.api.canSave=true;}
+      if(!this.restoreNotified){this.restoreNotified=true;this.onRestored?.();}
+      return;
+    }
     this.onState({connected:false,error:error.message,participants:this.participants,revision:this.revision,saved:this.saved});
   }
   async tick() {
-    if(this.busy || this.stopped || this.checkpointing)return;
+    if(this.busy || this.stopped || this.checkpointing || this.pausedForRestore)return;
     this.busy=true;
     try {
       if(this.outbox){await this.sendOutbox();return;}
