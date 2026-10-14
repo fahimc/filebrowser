@@ -21,3 +21,8 @@ Publish only the listed README/guides/archive/image/history paths. Preserve othe
 ongoing work. The generation source and local render scratch remain outside Git;
 all consumed final assets are repository-local. Upstream attribution/licenses are
 retained and linked from each main README.
+
+Publication verified on fork/drive-reskin at 8fa6ed6ebd01c4a61ab95c03f0140cb51ace5d79.
+The fork default branch remains upstream-tracking main. The current README
+explicitly points viewers/builders at drive-reskin; do not switch the default
+branch or rewrite upstream main as part of a documentation-only continuation.

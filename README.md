@@ -66,6 +66,8 @@ The timeline uses file modification dates. Albums correspond to ordinary folders
 
 ## Build and integration
 
+For this custom app, use the [`drive-reskin` branch](https://github.com/fahimc/filebrowser/tree/drive-reskin) when viewing or cloning the repository.
+
 Start with [contributing instructions](CONTRIBUTING.md). Additional build and integration guides:
 
 - [Office editor assets and backend integration](OFFICE.md)
