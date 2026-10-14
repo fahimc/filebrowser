@@ -1,160 +1,82 @@
-<img src="frontend/src/assets/branding/my_drive.svg" alt="My Drive" width="80" height="80">
+# <img src="frontend/src/assets/branding/my_drive.svg" alt="" width="40" height="40"> My Drive
 
-<div align="center">
+A self-hosted file manager with a Drive-style interface, browser Office editing, photo browsing and an optional image editor. Built on FileBrowser Quantum and connected to [One Workspace](https://github.com/fahimc/one-workspace) through MyAccounts.
 
-  [![Codacy Badge](https://app.codacy.com/project/badge/Grade/0b548794f2ac4871a0cf7aa9ecab049f)](https://app.codacy.com/gh/gtsteffaniak/filebrowser/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-  [![latest version](https://img.shields.io/github/v/release/gtsteffaniak/filebrowser)](https://github.com/gtsteffaniak/filebrowser/releases)
-  [![DockerHub Pulls](https://img.shields.io/docker/pulls/gtstef/filebrowser?label=latest%20Docker%20pulls)](https://hub.docker.com/r/gtstef/filebrowser)
-  [![Apache-2.0 License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[Download Windows previews](https://github.com/fahimc/filebrowser/releases) · [MyAccounts setup](MYACCOUNTS.md) · [Office](OFFICE.md) · [Photos](PHOTOS.md) · [Suite installer](https://github.com/fahimc/one-workspace)
 
-  [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://github.com/gtsteffaniak/filebrowser/wiki/Q&A#is-there-a-way-to-donate-or-support-this-project)
+![My Drive browsing sample images, with Photos and Photo Editor in the sidebar](docs/images/drive.png)
 
-  <img width="150" alt="FileBrowser Quantum logo" src="https://github.com/user-attachments/assets/c40b22c9-33da-47b7-bc4c-ce69bb5cc174">
-  <h3>FileBrowser Quantum</h3>
-  The best free self-hosted web-based file manager.
-  <br/><br/>
-  <img width="800" alt="FileBrowser Quantum file listing in dark mode" src="https://filebrowserquantum.com/images/generated/listing/view-mode-normal-dark.jpg">
-</div>
+*Actual interface capture from an isolated preview using sample files.*
 
-## Pinned
+## Your files, with more ways to work
 
-:pushpin: [Read The Official Docs](https://filebrowserquantum.com/) (currently english-only)
+| App | Workflow and guide |
+| --- | --- |
+| <img src="frontend/src/assets/branding/my_drive.svg" alt="" width="28" height="28"> **Drive** | Browse sources, upload, search and share. [FileBrowser documentation](https://filebrowserquantum.com/). |
+| <img src="frontend/src/assets/branding/my_office.svg" alt="" width="28" height="28"> **Office** | Edit documents, sheets, slides and PDFs with autosave and history. [Office guide](OFFICE.md). |
+| <img src="frontend/src/assets/branding/my_photos.svg" alt="" width="28" height="28"> **Photos** | Explore a thumbnail timeline, folder albums and favourites. [Photos guide](PHOTOS.md). |
+| <img src="frontend/src/assets/branding/photo_editor.svg" alt="" width="28" height="28"> **Photo&nbsp;Editor** | Open images in Studio and save through Drive's permissions. [Studio app and adapter](https://github.com/fahimc/miniPaint/blob/master/STUDIO.md). |
 
-:pushpin: [v2.0.0 is now stable!](https://filebrowserquantum.com/en/docs/getting-started/v2/about/) --> See [migration support discussion](https://github.com/gtsteffaniak/filebrowser/discussions/3105)
+All file access uses FileBrowser's source configuration and permissions. Office documents and photos stay in their existing folders; browsing them does not import them into a second storage service.
 
-## About
+## Choose how to install
 
-FileBrowser Quantum provides an easy way to access and manage your files from the web. It has a modern responsive interface that has many advanced features to manage users, access, sharing, and file preview and editing.
+### With One Workspace
 
-This version is called "Quantum" because it packs tons of advanced features into a tiny and easy-to-run file. Unlike the majority of alternative options, FileBrowser Quantum is simple to install and easy to configure.
+Use the [One Workspace installer](https://github.com/fahimc/one-workspace). Its wizard configures the included components and shared MyAccounts login. Apps open from the portal and can use the same HTTPS tunnel.
 
-The goal for this repo is to become the best open-source self-hosted file browsing application that exists -- **all for free**. This repo will always be free and open-source.
+### Standalone Drive
 
-## One Workspace apps
+Download a preview from this fork's [releases](https://github.com/fahimc/filebrowser/releases), configure your file sources and authentication, then launch the executable with its configuration:
 
-This custom FileBrowser powers Drive, Office and Photos, and connects to the Photo Editor. [One Workspace](https://github.com/fahimc/one-workspace) supplies the suite installer and shared MyAccounts sign-in.
+```powershell
+.\FileBrowser.exe -c .\config.yaml
+```
 
-| App | Logo | Guide |
-| --- | --- | --- |
-| My Drive | <img src="frontend/src/assets/branding/my_drive.svg" alt="My Drive" width="48" height="48"> | Browse, upload and share ordinary files |
-| My Office | <img src="frontend/src/assets/branding/my_office.svg" alt="My Office" width="48" height="48"> | [Browser Office editor](OFFICE.md) |
-| My Photos | <img src="frontend/src/assets/branding/my_photos.svg" alt="My Photos" width="48" height="48"> | [Photos and portable companion](PHOTOS.md) |
-| Photo Editor | <img src="frontend/src/assets/branding/photo_editor.svg" alt="Photo Editor" width="48" height="48"> | [Studio source and integration guide](https://github.com/fahimc/miniPaint/blob/master/STUDIO.md) |
+FileBrowser can use its normal authentication independently of MyAccounts. To connect shared sign-in, follow [MYACCOUNTS.md](MYACCOUNTS.md). Keep the OIDC client secret in a protected launcher environment.
 
-## Photos
+**Release coverage:** the published `drive-office-v0.4.0` package includes Office/version history. Newer Photos, Studio and branding source may require a local build or a later package; check each release's notes before installing.
 
-Open **Photos** in the sidebar to browse existing photo and video folders, search filenames, view originals, upload files and save favourites. The optional portable **Photos.exe** companion connects to an existing FileBrowser installation without Docker. See [Photos usage, build instructions and future Android architecture](PHOTOS.md). Android uploads are deferred.
+## Office and Photos previews
 
-## Browser Office editor
+<details>
+<summary>Office document editing</summary>
 
-DOCX, XLSX, PPTX, and supported PDF files open in the bundled browser editor. The editor runs in the user's browser; FileBrowser reads and saves documents through its existing file APIs, so edited files remain ordinary files in their configured folders. Creating new DOCX, XLSX, and PPTX files is available from the New menu.
+![Office document editing with the My Office toolbar logo](docs/images/office.png)
 
-The editor assets are embedded in the FileBrowser build. A released FileBrowser executable therefore remains a single-file deployment with no Office service to install, though the bundled editor increases the executable size substantially. See [Office usage and build instructions](OFFICE.md) and [third-party notices](third_party/NOTICES.md).
+Open a supported file, edit in your browser and wait for **All changes saved**. See [Office setup, history and build details](OFFICE.md).
 
-Ready to try it out? See [Getting Started Docs](https://filebrowserquantum.com/en/docs/getting-started/).
+</details>
 
-## How its different
+<details>
+<summary>Photos library</summary>
 
-FileBrowser Quantum is a massive fork of the file browser open-source project with the following changes:
+![My Photos library showing sample images](docs/images/photos.png)
 
-  1. ✅ Better source configuration - multiple sources, include/exclude rules, and [more](https://filebrowserquantum.com/en/docs/configuration/sources/)
-  2. ✅ Login support for OIDC, LDAP, JWT, password + 2FA, and proxy.
-  3. ✅ Beautiful, Responsive, and Customizable user interface.
-  4. ✅ Streamlined configuration via `config.yaml` config file.
-  5. ✅ Efficient search
-     - Real-time search results as you type.
-     - Real-time monitoring and updates in the UI.
-     - Search supports file and folder sizes, along with various filters.
-  6. ✅ Better listing browsing
-     - Thumbnails support includes **office**, **video**, and **album artwork**, and **3D models**.
-     - Faster and more responsive views with animations.
-     - **Folder sizes** are displayed and support thumbnails
-     - Navigating remembers the last scroll position.
-     - WebDAV support
-     - Granular permissions
-  7. ✅ Highly configurable and [customizable sharing options](https://filebrowserquantum.com/en/docs/shares/options/)
-     - share expiration time
-     - users who can access share (including anonymous)
-     - styling and themes
-     - file viewing, editing, and uploading permissions
-  8. ✅ Access control that can be scoped to user or group and source path.
-  9. ✅ Developer API support
-     - Ability to create long-lived API Tokens.
-     - A helpful Swagger page is available at `/swagger` endpoint for API enabled users.
+The timeline uses file modification dates. Albums correspond to ordinary folders, and favourites use the existing per-user pinned items. Android uploads are deferred; see [PHOTOS.md](PHOTOS.md).
 
-Notable features that this fork *does not* have (removed):
- - ❌ shell commands are completely removed and will not be returned.
+</details>
 
-FileBrowser Quantum differs significantly from the original version. Many of these changes required a significant overhaul. Creating a fork was a necessary process to make the program better. There have been many growing pains, but a stable release is planned and coming soon.
+## Access and storage
 
-## The UI
+- Sources can point at existing folders. Configure scopes, access rules and read/write permissions for each user or group.
+- Integrated Office, Photos and Studio use the signed-in Drive user's access. Standalone companions have their own connection requirements.
+- Shared suite folders are shared storage; they do not create private home directories automatically.
+- Back up your files, FileBrowser settings/database and document history. Stop writes before taking filesystem snapshots.
 
-The UI has a simple three-component navigation system:
+## Build and integration
 
-  1. (Left) Multi-action button with slide-out panel.
-  2. (Middle) The powerful search bar / title
-  3. (Right) The view change toggle / overflow menu
+Start with [contributing instructions](CONTRIBUTING.md). Additional build and integration guides:
 
-All other functions are moved either into the action menu or pop-up menus.
-If the action does not depend on context, it will exist in the slide-out
-action panel. If the action is available based on context, it will show up as
-a pop-up menu.
+- [Office editor assets and backend integration](OFFICE.md)
+- [Portable Photos build](scripts/build-photos.ps1)
+- [Photo Editor source and FileBrowser adapter](https://github.com/fahimc/miniPaint)
+- [MyAccounts configuration](MYACCOUNTS.md)
 
-<img width="1200" height="750" alt="Aug-07-2026 14-54-55" src="https://github.com/user-attachments/assets/fd1c1747-f30f-4e21-b991-f45744416d7e" />
+No GitHub Actions build is required for the local packages. Runtime files, credentials and private previews belong outside the repository.
 
-## Official Docs
+## Project background and licenses
 
-See the [Official Docs](https://filebrowserquantum.com/). Contributions are welcome and encouraged! See [FilebrowserDocs Github](https://github.com/quantumx-apps/filebrowserDocs).
+This fork builds on [FileBrowser Quantum](https://github.com/gtsteffaniak/filebrowser). The file manager retains its [Apache 2.0 license](LICENSE); bundled editor components retain their own licenses, including AGPL terms. Read [third-party notices](third_party/NOTICES.md) when building or redistributing.
 
-## Comparison Chart
-Application Name | <img width="48" alt="" src="https://github.com/user-attachments/assets/c40b22c9-33da-47b7-bc4c-ce69bb5cc174" > Quantum | <img width="48" alt="" src="https://github.com/filebrowser/filebrowser/blob/master/frontend/public/img/logo.svg" > Filebrowser | <img width="48" alt="" src="https://github.com/mickael-kerjean/filestash/blob/master/public/assets/logo/app_icon.png?raw=true" > Filestash | <img width="48" alt="" src="https://avatars.githubusercontent.com/u/19211038?s=200&v=4" >  Nextcloud | <img width="48" alt="" src="https://cdn.iconscout.com/icon/free/png-256/free-google-drive-logo-icon-svg-download-png-2476481.png" > Google_Drive | <img width="48" alt="" src="https://avatars.githubusercontent.com/u/6422152?v=4" > FileRun
---- | --- | --- | --- | --- | --- | --- |
-Filesystem support            | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
-Linux                         | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
-Windows                       | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
-Mac                           | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
-Self hostable                 | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
-Has Stable Release?           | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-S3 support                    | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
-webdav support                | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ |
-FTP support                   | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ |
-Dedicated docs site?          | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-Multiple sources at once      | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ |
-Docker image size             | 180 MB (with ffmpeg) | 31 MB  | 240 MB (main image) | 250 MB | ❌ | > 2 GB |
-Min. Memory Requirements      | 512 MB | 128 MB | 128 MB (main image) | 512 MB | ❌ | 512 MB   |
-has standalone binary         | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-price                         | free | free | free | free tier | free tier | $99+ |
-rich media preview            | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-Upload files from the web?    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-Advanced Search?              | ✅ | ❌ | ✅ | configurable | ✅ | ✅ |
-Indexed Search?               | ✅ | ❌ | ✅ | configurable | ✅ | ✅ |
-Content-aware search?         | ❌ | ❌ | ✅ | configurable | ✅ | ✅ |
-Custom job support            | :construction: | ✅ | ✅ | ✅ | ❌ | ✅ |
-Multiple users                | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-Single sign-on support        | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-LDAP sign-on support          | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-Long-live API key support     | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-API documentation page        | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-Mobile App                    | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-open source?                  | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
-tags support                  | :construction: | ❌ | ✅ | ✅ | ❌ | ✅ |
-shareable web links?          | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-Event-based notifications     | :construction: | ❌ | ✅ | ❌ | ❌ | ✅ |
-Metrics                       | :construction: | ❌ | ✅ | ✅ | ❌ | ❌ |
-file space quotas             | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ |
-text-based files editor       | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-Office file support           | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-Office file previews          | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ |
-Themes                        | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
-Branding support              | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
-activity log                  | ✅ | ❌ | ✅ | ✅ | ✅ | ✅
-Comments support              | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
-trash support                 | :construction: | ❌ | ✅ | ✅ | ✅ | ✅ |
-Starred/pinned files          | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-Chromecast support            | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-Share collections of files    | :construction: | ❌ | ❌ | ❌ | ❌ | ✅ |
-Can archive selected files    | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
-Can browse archive files      | :construction: | ❌ | ✅ | ❌ | ❌ | ✅ |
-Can convert documents         | :construction: | ❌ | ✅ | ❌ | ❌ | ✅ |
-Can convert videos            | :construction: | ❌ | ✅ | ❌ | ❌ | ❌ |
-Can convert photos            | :construction: | ❌ | ✅ | ❌ | ❌ | ❌ |
+The [earlier README](docs/README-archive.md) preserves upstream background, credits and historical comparisons. Use the guides above for this fork's current setup.

@@ -1,6 +1,6 @@
 # MyAccounts SSO
 
-The companion source repository is [fahimc/myaccounts](https://github.com/fahimc/myaccounts). Its single native Windows EXE embeds the identity UI/service and SQLite. First execution asks for administrator credentials, domain/subdomain, optional Cloudflare method/token and SMTP details. Automatic Windows startup is optional and requests elevation only when chosen.
+The companion source repository is [fahimc/myaccounts](https://github.com/fahimc/myaccounts). Its single native Windows EXE embeds the identity UI/service and SQLite. First execution asks for administrator credentials, domain/subdomain, optional Cloudflare method/token and optional email delivery settings. SMTP is not required for sign-in or administrator-managed password resets. Automatic Windows startup is optional and requests elevation only when chosen.
 
 Use a separate OIDC client per FileBrowser origin, `openid profile email`, exact `ORIGIN/api/auth/oidc/callback`, and stable `sub` as userIdentifier. Keep password recovery administration available. New SSO users must have `userDefaults.account.permissions.admin: false` and no untested administrator-group mapping.
 

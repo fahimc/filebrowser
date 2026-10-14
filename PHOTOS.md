@@ -1,6 +1,4 @@
-<img src="frontend/src/assets/branding/my_photos.svg" alt="My Photos" width="80" height="80">
-
-# Photos for FileBrowser Drive
+# <img src="frontend/src/assets/branding/my_photos.svg" alt="" width="32" height="32"> Photos for FileBrowser Drive
 
 Photos is a Google Photos-style view of the photos and videos in your existing FileBrowser folders. It includes a dated thumbnail timeline, filename search, photo/video filters, folder albums, favourites, original downloads and a keyboard-accessible fullscreen viewer. The timeline currently uses **file modification dates**, not EXIF capture dates. Favourites use FileBrowser's existing per-account pinned items, so they persist on the server. Albums are ordinary folders, not imported copies.
 
