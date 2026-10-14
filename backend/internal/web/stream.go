@@ -32,6 +32,7 @@ var errStreamRangeInvalid = errors.New("invalid byte range")
 type ServeSingleFileOptions struct {
 	ForceInline bool
 	RangeOnly   bool
+	NoStore     bool
 }
 
 func viewGrantScope(d *Context, sourceName string) string {
@@ -557,6 +558,9 @@ func ServeSingleFile(w http.ResponseWriter, r *http.Request, d *Context, source 
 	// from mtime in nanoseconds and size, catches an edit within the same second, which
 	// If-Modified-Since cannot; it costs no read of the file.
 	w.Header().Set("Cache-Control", "private, no-cache")
+	if opts.NoStore {
+		w.Header().Set("Cache-Control", "private, no-store")
+	}
 	w.Header().Set("ETag", fmt.Sprintf(`"%x-%x"`, fileInfo.ModTime().UnixNano(), fileInfo.Size()))
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 

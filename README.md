@@ -1,3 +1,5 @@
+<img src="frontend/src/assets/branding/my_drive.svg" alt="My Drive" width="80" height="80">
+
 <div align="center">
 
   [![Codacy Badge](https://app.codacy.com/project/badge/Grade/0b548794f2ac4871a0cf7aa9ecab049f)](https://app.codacy.com/gh/gtsteffaniak/filebrowser/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
@@ -27,6 +29,21 @@ FileBrowser Quantum provides an easy way to access and manage your files from th
 This version is called "Quantum" because it packs tons of advanced features into a tiny and easy-to-run file. Unlike the majority of alternative options, FileBrowser Quantum is simple to install and easy to configure.
 
 The goal for this repo is to become the best open-source self-hosted file browsing application that exists -- **all for free**. This repo will always be free and open-source.
+
+## One Workspace apps
+
+This custom FileBrowser powers Drive, Office and Photos, and connects to the Photo Editor. [One Workspace](https://github.com/fahimc/one-workspace) supplies the suite installer and shared MyAccounts sign-in.
+
+| App | Logo | Guide |
+| --- | --- | --- |
+| My Drive | <img src="frontend/src/assets/branding/my_drive.svg" alt="My Drive" width="48" height="48"> | Browse, upload and share ordinary files |
+| My Office | <img src="frontend/src/assets/branding/my_office.svg" alt="My Office" width="48" height="48"> | [Browser Office editor](OFFICE.md) |
+| My Photos | <img src="frontend/src/assets/branding/my_photos.svg" alt="My Photos" width="48" height="48"> | [Photos and portable companion](PHOTOS.md) |
+| Photo Editor | <img src="frontend/src/assets/branding/photo_editor.svg" alt="Photo Editor" width="48" height="48"> | [Studio source and integration guide](https://github.com/fahimc/miniPaint/blob/master/STUDIO.md) |
+
+## Photos
+
+Open **Photos** in the sidebar to browse existing photo and video folders, search filenames, view originals, upload files and save favourites. The optional portable **Photos.exe** companion connects to an existing FileBrowser installation without Docker. See [Photos usage, build instructions and future Android architecture](PHOTOS.md). Android uploads are deferred.
 
 ## Browser Office editor
 

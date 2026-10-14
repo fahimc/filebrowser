@@ -1,6 +1,7 @@
 <template>
   <section class="document-editor" :class="{ 'document-editor--prompt': isPrompt }">
     <div class="document-editor__toolbar">
+      <img :src="officeLogo" alt="My Office" width="32" height="32" style="flex:none" />
       <input
         v-if="isNewDocument"
         v-model.trim="newFileName"
@@ -54,6 +55,7 @@
 </template>
 
 <script>
+import officeLogo from "@/assets/branding/my_office.svg";
 import { resourcesApi } from "@/api";
 import { getters, mutations, state } from "@/store";
 import { globalVars } from "@/utils/constants.js";
@@ -116,6 +118,7 @@ export default {
     };
   },
   computed: {
+    officeLogo: () => officeLogo,
     isPrompt() {
       return this.promptId !== null && this.promptId !== undefined;
     },

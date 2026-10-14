@@ -18,6 +18,7 @@ const translate = (key: string): string => i18n.global.t(key) as string;
 const t = i18n.global.t.bind(i18n.global);
 
 const titles: Record<string, string> = {
+  Photos: "Photos",
   Login: translate("general.login"),
   Share: translate("general.share"),
   /** Same component as Share; name differs for /public optional-auth routes. */
@@ -38,6 +39,8 @@ const titles: Record<string, string> = {
 };
 
 const routes: RouteRecordRaw[] = [
+    {path:'/studio',component:Layout,meta:{requiresAuth:true},children:[{path:'',name:'Studio',component:()=>import('@/views/Studio.vue')}]},
+  {path:"/photos",component:Layout,meta:{requiresAuth:true},children:[{path:"",name:"Photos",component:()=>import("@/views/Photos.vue")}]},
   {
     path: "/login",
     name: "Login",

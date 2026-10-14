@@ -58,6 +58,11 @@ func configureHTTPRouter(router, api, publicRoutes, publicApi *http.ServeMux) {
 	// Resources Routes - /api/resources/ (with public routes)
 	// ========================================
 	api.HandleFunc("GET /resources", withUser(resourceGetHandler))
+	api.HandleFunc("GET /photos/capabilities", withUser(photosCapabilities))
+	api.HandleFunc("GET /studio/file", withUser(studioFile))
+	api.HandleFunc("PUT /studio/file", withUser(studioFile))
+	api.HandleFunc("GET /photos/library", withTimeout(time30s, withUserHelper(photosLibrary)))
+	api.HandleFunc("GET /photos/media", withTimeout(time60s, withUserHelper(photosMedia)))
 	api.HandleFunc("GET /resources/items", withUser(itemsGetHandler))
 	api.HandleFunc("DELETE /resources", withUser(resourceDeleteHandler))
 	api.HandleFunc("POST /resources", withUser(ResourcePostHandler))

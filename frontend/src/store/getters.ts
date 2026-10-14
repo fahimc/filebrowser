@@ -393,6 +393,8 @@ export const getters = {
     if (!state.user || state.user?.username === "") return 'login';
     if (pathname.startsWith(`/settings`)) return 'settings';
     if (pathname.startsWith(`/tools`)) return 'tools';
+    if (pathname === '/photos') return 'photos';
+    if (pathname === '/studio') return 'studio';
 
     if (state.req.type !== undefined) {
       const reqName = state.req.name ?? "";

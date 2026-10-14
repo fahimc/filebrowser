@@ -1,3 +1,5 @@
+<img src="frontend/src/assets/branding/my_office.svg" alt="My Office" width="80" height="80">
+
 # Browser Office integration
 
 Open DOCX, XLSX, PPTX, or supported PDF files from FileBrowser. Changes are exported by the browser editor and written to the original file through FileBrowser's authenticated resource API. The status becomes **All changes saved** only after the filesystem write succeeds. A failed write keeps the document open and enables Save for a retry. Closing or navigating away waits for pending edits to save.

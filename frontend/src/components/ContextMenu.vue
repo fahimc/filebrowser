@@ -143,6 +143,7 @@
           :label="$t('general.download')"
           @action="startDownload"
         />
+        <action v-if="canOpenStudio" icon="photo_filter" label="Edit in Studio" @action="openStudio" />
         <action
           v-if="showSendToApp"
           icon="ios_share"
@@ -241,6 +242,7 @@
       class="no-select floating-window"
     >
       <action icon="info" :label="$t('general.info')" @action="showInfoPrompt"/>
+      <action v-if="canOpenStudioPreview" icon="photo_filter" label="Edit in Studio" @action="openStudioPreview" />
       <action v-if="showGoToRaw" icon="open_in_new" :label="$t('general.openFile')" @action="goToRaw()" />
       <action v-if="shouldShowParentFolder()" icon="folder" :label="$t('buttons.openParentFolder')" @action="openParentFolder" />
       <action v-if="isPreview && permissions.modify" icon="edit" :label="$t('general.rename')" @action="showRenamePromptForPreview" />
@@ -314,6 +316,8 @@ export default {
     },
   },
   computed: {
+    canOpenStudio(){return !getters.isShare()&&this.selectedCount===1&&/\.(png|jpe?g|webp|gif|bmp|svg|json)$/i.test(this.firstSelected?.name||'');},
+    canOpenStudioPreview(){return !getters.isShare()&&/\.(png|jpe?g|webp|gif|bmp|svg|json)$/i.test(state.req?.name||'');},
     // Either from prop or from state
     providedItems() {
       // Only treat non-empty explicit `items` as overriding selection ([] means "use global state")
@@ -665,6 +669,8 @@ export default {
     }
   },
   methods: {
+    openStudio(){const item=this.firstSelected;if(!item)return;mutations.closeHovers();this.$router.push({path:'/studio',query:{source:item.source||state.req.source,path:item.path}});},
+    openStudioPreview(){mutations.closeHovers();this.$router.push({path:'/studio',query:{source:state.req.source,path:state.req.path}});},
     showInfoPrompt() {
       mutations.closeHovers();
       mutations.showPrompt({

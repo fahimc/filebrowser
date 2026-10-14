@@ -69,7 +69,9 @@
 
   <!-- Sidebar Links Component (replaces sources) -->
   <SidebarLinks />
-</template>
+  <router-link v-if="!isShare && isDataLoaded" to="/photos" class="photos-sidebar-link" :class="{'photos-sidebar-link--active':$route.name==='Photos'}"><PhotosIcon name="logo"/><span>Photos</span></router-link>
+  <router-link v-if="!isShare && isDataLoaded" to="/studio" class="photos-sidebar-link" :class="{'photos-sidebar-link--active':$route.name==='Studio'}"><img :src="studioLogo" alt="" width="24" height="24" /><span>Image Studio</span></router-link>
+  </template>
 
 <script>
 import { logout } from "@/utils/auth";
@@ -81,16 +83,20 @@ import {
 } from "@/utils/tooltipHelp.js";
 import SidebarLinks from "./Links.vue";
 import { url } from "@/utils";
+import studioLogo from "@/assets/branding/photo_editor.svg";
+import PhotosIcon from '@/components/photos/PhotosIcon.vue';
 
 export default {
   name: "SidebarGeneral",
   components: {
+    PhotosIcon,
     SidebarLinks,
   },
   data() {
     return {};
   },
   computed: {
+    studioLogo: () => studioLogo,
     // Check if data is loaded before showing user info
     isDataLoaded() {
       if (getters.isShare()) {
@@ -246,6 +252,10 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.photos-sidebar-link{display:flex;align-items:center;gap:20px;margin:8px 16px;padding:14px 22px;border-radius:26px;color:var(--textPrimary);text-decoration:none;font-size:14px}.photos-sidebar-link:hover{background:var(--surface-alt,#e8f0fe)}.photos-sidebar-link--active{background:#d3e3fd;color:#0842a0;font-weight:600}
+</style>
 
 <style>
 

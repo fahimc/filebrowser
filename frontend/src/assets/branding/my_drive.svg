@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="My Drive logo">
+  <title>My Drive logo</title>
+  <defs>
+    <linearGradient id="edge" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#11CAFF"/>
+      <stop offset="1" stop-color="#1678FF"/>
+    </linearGradient>
+    <linearGradient id="letters" x1="125" y1="144" x2="384" y2="350" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4CDDFF"/>
+      <stop offset="1" stop-color="#1978F9"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="70" y1="20" x2="445" y2="496" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#041827"/>
+      <stop offset="1" stop-color="#050A19"/>
+    </linearGradient>
+    <radialGradient id="haze" cx="0" cy="0" r="1" gradientTransform="translate(250 103) rotate(90) scale(370)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#11CAFF" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#11CAFF" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="rounded"><rect width="512" height="512" rx="76"/></clipPath>
+  </defs>
+  <!-- Canvas outside the rounded square remains fully transparent. -->
+  <g clip-path="url(#rounded)">
+    <rect width="512" height="512" fill="url(#panel)"/>
+    <rect width="512" height="512" fill="url(#haze)"/>
+    <rect x="7" y="7" width="498" height="498" rx="70" stroke="url(#edge)" stroke-width="12" fill="none"/>
+    <rect x="24" y="24" width="464" height="464" rx="55" stroke="#FFFFFF" stroke-opacity="0.05" stroke-width="2" fill="none"/>
+    <g fill="url(#letters)">
+      <path d="M1307 0V854Q1307 883 1307.5 912.0Q1308 941 1317 1161Q1246 892 1212 786L958 0H748L494 786L387 1161Q399 929 399 854V0H137V1409H532L784 621L806 545L854 356L917 582L1176 1409H1569V0Z" transform="translate(63.158 343) scale(0.121094 -0.121094)"/>
+<path d="M1393 715Q1393 497 1307.5 334.5Q1222 172 1065.5 86.0Q909 0 707 0H137V1409H647Q1003 1409 1198.0 1229.5Q1393 1050 1393 715ZM1096 715Q1096 942 978.0 1061.5Q860 1181 641 1181H432V228H682Q872 228 984.0 359.0Q1096 490 1096 715Z" transform="translate(269.744 343) scale(0.121094 -0.121094)"/>
+    </g>
+  </g>
+</svg>
