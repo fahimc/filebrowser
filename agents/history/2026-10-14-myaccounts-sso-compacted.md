@@ -1,0 +1,15 @@
+# MyAccounts integration handoff
+
+User explicitly asked to connect this project to MyAccounts and selected both local and remote previews. Source head before this task was 2f7e461; previews run published drive-office-v0.4.0 executable under I:/Projects/tooling/releases/. Original untracked drive-preview.png and frontend/drive-preview.html are preserved.
+
+MyAccounts authoritative source is H:/Projects/myaccounts, private GitHub fahimc/myaccounts; protected runtime F:/MyAccounts/install/data. Authorized permanent issuer login.m8e.co.uk is live with a fresh dedicated remotely managed Cloudflare tunnel/DNS and verified discovery. Its original brief stays in that repo. SMTP/service/clean-host limits remain in its acceptance ledger.
+
+Local preview config: I:/Projects/filebrowser-office-preview/history-release-runtime/config.yaml, loopback 8810. Remote: remote-runtime/config.yaml, loopback 8794 and its existing Quick Tunnel. Extract the current private remote hostname from its tunnel.log; do not commit it. Both configurations/settings SQLite files were backed up consistently under F:/MyAccounts/install/private before modification. Sources and .filebrowser-history are unchanged.
+
+Distinct permanent MyAccounts OIDC clients filebrowser-drive-local/remote, exact callbacks, stable sub. Client secrets in private machine-DPAPI handoffs, supplied via new run-myaccounts-filebrowser.ps1 wrapper; not in YAML or command line. Local no-auth disabled and recovery password administrator created from protected handoff. Remote password administrator retained. Normal new-user admin/API defaults false; no admin-group mapping. Trusted proxy headers enabled for loopback remote origin. Runtime wrapper processes started hidden; identify actual children by listening port and selected release executable before any stop. Leave unrelated 8787/8788/8798/8799/8811 listeners alone.
+
+Introduced configuration issue: initial installer used nested oidc.loginButtonText (invalid). Corrected to actual frontend.oidcLoginButtonText; local preview briefly stopped, then recovered successfully. No document/setting loss claimed. Future helper now emits the correct key and refuses unknown product/listener configurations and existing OIDC replacement.
+
+Real Chrome proof passed both actual public-provider redirects and callbacks, matching stable subject, authenticated session, normal permissions, forbidden other-admin profile, HttpOnly/Secure public cookie. New email-first/saved-identifier consent/select/change/remove in provider passed. Script myaccounts-sso-smoke.mjs is ignored by existing smoke-file pattern and must be staged explicitly with -f. Browser profiles/screenshots/cookies remain private outside Git. Do not rerun tests with live credentials in arguments or logs.
+
+Added MYACCOUNTS.md and the configuration/launcher/test scripts; no application binary or Office engine source changed. Stage only these intended files/history, preserving existing preview artifacts. Existing history release proof stays in older handoff. Wrapper secrets are machine-bound; re-protect them from the identity client configuration when relocating to another Windows machine.
