@@ -3,6 +3,7 @@ import {chromium,expect} from '../frontend/node_modules/@playwright/test/index.m
 import {waitForEditorReady,typeIntoDocument} from '../third_party/ranuts-document/test/e2e/actions/editor.ts';
 import {readFile,mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
+import {createHash} from 'node:crypto';
 import {inflateRawSync} from 'node:zlib';
 const [base,files,screenshots]=process.argv.slice(2);
 if(!base||!files||!screenshots)throw Error('Pass URL, disposable files folder and screenshots folder');
@@ -37,11 +38,16 @@ async function restore(p){await p.getByRole('button',{name:'Restore this version
 async function list(p,name){const r=await p.request.post(base+'/api/office/history-list?source=My%20Drive&path='+encodeURIComponent('/'+name),{data:{}});expect(r.status()).toBe(200);return (await r.json()).versions;}
 async function close(p){await p.locator('.document-editor__toolbar').getByRole('button',{name:'Close',exact:true}).click();await expect(p.locator('.document-editor')).toHaveCount(0,{timeout:60000});await p.close();}
 try{
- for(const [file,kind]of (process.env.OFFICE_HISTORY_API_ONLY==='1'?[]:[['Quarterly report.docx','word'],['Team budget.xlsx','cell'],['Team update.pptx','slide'],['Annual report.pdf','pdf']])){
+ for(const [file,kind]of (process.env.OFFICE_HISTORY_API_ONLY==='1'?[]:[['Quarterly report.docx','word'],['Team budget.xlsx','cell'],['Team update.pptx','slide'],['Annual report.pdf','pdf']].filter(([,kind])=>!process.env.OFFICE_HISTORY_KIND||process.env.OFFICE_HISTORY_KIND===kind))){
   console.log('History:',file);const a=await device(),b=await device();await open(a,file);await open(b,file);
   const originalVersion=(await list(a,file)).find(v=>v.kind==='initial');const first='Approved '+kind+' '+Date.now();
   await edit(a,kind,'First'+Date.now());await expect.poll(()=>model(b,kind),{timeout:30000}).toEqual(await model(a,kind));
-  const approvedModel=await model(a,kind),approvedBytes=await readFile(join(files,file));await history(a);await nameCurrent(a,first);await closeHistory(a);
+  const approvedModel=await model(a,kind);await history(a);await nameCurrent(a,first);
+  // A peer can complete a further checkpoint before the name is pinned,
+  // particularly PDF's incremental export. Verify the named snapshot itself.
+  const approvedVersion=(await list(a,file)).find(v=>v.name===first);
+  const snapshot=await a.request.get(base+'/api/office/history-blob?source=My%20Drive&path='+encodeURIComponent('/'+file)+'&version='+approvedVersion.id+'&digest='+approvedVersion.digest);
+  expect(snapshot.status()).toBe(200);const approvedBytes=await snapshot.body();expect(createHash('sha256').update(approvedBytes).digest('hex')).toBe(approvedVersion.digest);await closeHistory(a);
   await edit(b,kind,'Second'+Date.now());await expect.poll(()=>model(a,kind),{timeout:30000}).toEqual(await model(b,kind));const secondModel=await model(b,kind);
   expect(secondModel).not.toEqual(approvedModel);await history(a);await select(a,first);
   await expect.poll(()=>model(a,kind,true),{timeout:120000}).toEqual(approvedModel);
@@ -50,10 +56,10 @@ try{
    await a.evaluate(()=>{const visit=w=>{if(w.Asc?.editor){w.document.getElementById('area_id')?.focus();return true;}for(let i=0;i<w.frames.length;i++)if(visit(w.frames[i]))return true;};visit(document.querySelector('.office-history__frame').contentWindow);});
    await a.keyboard.type('ForbiddenSnapshotEdit',{delay:20});expect(await model(a,kind,true)).toEqual(approvedModel);
   }
-  const download=a.waitForEvent('download');await a.getByRole('button',{name:'Download this version',exact:true}).click();expect(await readFile(await (await download).path())).toEqual(approvedBytes);
+  const download=a.waitForEvent('download');await a.getByRole('button',{name:'Download this version',exact:true}).click();expect((await readFile(await (await download).path())).equals(approvedBytes)).toBe(true);
   await a.screenshot({path:join(screenshots,kind+'-history.png')});await restore(a);
   await expect.poll(()=>model(a,kind),{timeout:60000}).toEqual(approvedModel);await expect.poll(()=>model(b,kind),{timeout:120000}).toEqual(approvedModel);
-  expect(await readFile(join(files,file))).toEqual(approvedBytes);
+  expect((await readFile(join(files,file))).equals(approvedBytes)).toBe(true);
   const versions=await list(a,file);expect(versions.some(v=>v.name===first)).toBe(true);expect(versions.some(v=>v.kind==='restore')).toBe(true);expect(versions.some(v=>v.id===originalVersion.id&&v.digest===originalVersion.digest)).toBe(true);
   console.log('PASS named savepoint, preview, exact download, restore and clean peer reload:',kind);
   if(kind==='word'){
@@ -62,7 +68,7 @@ try{
    await expect(b.locator('.document-editor__status')).toContainText('Download your draft',{timeout:30000});
    expect(await model(b,kind)).toContain(draft);const d=b.waitForEvent('download',{timeout:120000});await b.getByRole('button',{name:'Download copy',exact:true}).click();const bytes=await readFile(await (await d).path());expect(docxText(bytes)).toContain(draft);
    await b.getByRole('button',{name:'Reload current version',exact:true}).click();await b.getByRole('button',{name:'Discard draft and reload',exact:true}).click();await waitForEditorReady(b);await expect.poll(()=>model(b,kind),{timeout:60000}).toEqual(approvedModel);
-   expect(await readFile(join(files,file))).toEqual(approvedBytes);console.log('PASS restored offline device retains downloadable draft and cannot overwrite restored file');
+   expect((await readFile(join(files,file))).equals(approvedBytes)).toBe(true);console.log('PASS restored offline device retains downloadable draft and cannot overwrite restored file');
   }
   await close(a);await close(b);
  }
