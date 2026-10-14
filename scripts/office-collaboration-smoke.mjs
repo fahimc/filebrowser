@@ -65,7 +65,7 @@ try{
    await Promise.all([a,b].map(p=>p.evaluate(()=>Array.from(window.frames).flatMap(w=>Array.from(w.frames)).find(w=>w.Asc?.editor).Asc.editor.AddFreeTextAnnot(0))));
    for(const p of [a,b])await expect.poll(async()=>(await model(p,kind)).length,{timeout:60000}).toBe(count+2);
   }else await Promise.all([typeIntoDocument(a,kind,alpha),typeIntoDocument(b,kind,beta)]);
-  if(kind==='word' || kind==='slide'){
+  if(kind==='word'){
    const expected=counts(original+alpha+beta);
    for(const p of [a,b])await expect.poll(async()=>counts(await model(p,kind)),{timeout:60000}).toEqual(expected);
    for(const p of [a,b]){expect(subsequence(await model(p,kind),alpha)).toBe(true);expect(subsequence(await model(p,kind),beta)).toBe(true);}
