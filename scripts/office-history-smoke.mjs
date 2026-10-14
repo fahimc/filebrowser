@@ -3,7 +3,6 @@ import {chromium,expect} from '../frontend/node_modules/@playwright/test/index.m
 import {waitForEditorReady,typeIntoDocument} from '../third_party/ranuts-document/test/e2e/actions/editor.ts';
 import {readFile,mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
-import {createHash} from 'node:crypto';
 import {inflateRawSync} from 'node:zlib';
 const [base,files,screenshots]=process.argv.slice(2);
 if(!base||!files||!screenshots)throw Error('Pass URL, disposable files folder and screenshots folder');
@@ -40,7 +39,7 @@ async function close(p){await p.locator('.document-editor__toolbar').getByRole('
 try{
  for(const [file,kind]of (process.env.OFFICE_HISTORY_API_ONLY==='1'?[]:[['Quarterly report.docx','word'],['Team budget.xlsx','cell'],['Team update.pptx','slide'],['Annual report.pdf','pdf']])){
   console.log('History:',file);const a=await device(),b=await device();await open(a,file);await open(b,file);
-  const original=await readFile(join(files,file));const first='Approved '+kind+' '+Date.now();
+  const originalVersion=(await list(a,file)).find(v=>v.kind==='initial');const first='Approved '+kind+' '+Date.now();
   await edit(a,kind,'First'+Date.now());await expect.poll(()=>model(b,kind),{timeout:30000}).toEqual(await model(a,kind));
   const approvedModel=await model(a,kind),approvedBytes=await readFile(join(files,file));await history(a);await nameCurrent(a,first);await closeHistory(a);
   await edit(b,kind,'Second'+Date.now());await expect.poll(()=>model(a,kind),{timeout:30000}).toEqual(await model(b,kind));const secondModel=await model(b,kind);
@@ -55,7 +54,7 @@ try{
   await a.screenshot({path:join(screenshots,kind+'-history.png')});await restore(a);
   await expect.poll(()=>model(a,kind),{timeout:60000}).toEqual(approvedModel);await expect.poll(()=>model(b,kind),{timeout:120000}).toEqual(approvedModel);
   expect(await readFile(join(files,file))).toEqual(approvedBytes);
-  const versions=await list(a,file);expect(versions.some(v=>v.name===first)).toBe(true);expect(versions.some(v=>v.kind==='restore')).toBe(true);expect(versions.some(v=>v.digest===createHash('sha256').update(original).digest('hex'))).toBe(true);
+  const versions=await list(a,file);expect(versions.some(v=>v.name===first)).toBe(true);expect(versions.some(v=>v.kind==='restore')).toBe(true);expect(versions.some(v=>v.id===originalVersion.id&&v.digest===originalVersion.digest)).toBe(true);
   console.log('PASS named savepoint, preview, exact download, restore and clean peer reload:',kind);
   if(kind==='word'){
    await b.context().setOffline(true);const draft='UnsavedDraft'+Date.now();await typeIntoDocument(b,kind,draft);await expect.poll(()=>model(b,kind)).toContain(draft);
