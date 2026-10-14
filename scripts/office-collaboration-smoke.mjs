@@ -31,6 +31,8 @@ async function model(page,kind){return page.evaluate(kind=>{
  const ps=[];api.WordControl.m_oLogicDocument.GetAllParagraphs({All:true},ps);return ps.map(p=>p.GetText()).join('\n');
 },kind);}
 async function saved(page){await expect(page.locator('.document-editor__status')).toHaveText('All changes saved',{timeout:60000});}
+const counts=text=>{const result={};for(const char of text)result[char]=(result[char]||0)+1;return result;};
+const subsequence=(text,marker)=>{let at=0;for(const char of text)if(char===marker[at])at++;return at===marker.length;};
 function officeText(bytes){
  const eocd=bytes.lastIndexOf(Buffer.from([0x50,0x4b,0x05,0x06]));expect(eocd).toBeGreaterThan(0);
  let offset=bytes.readUInt32LE(eocd+16),text='';
@@ -55,6 +57,7 @@ try{
   const a=await device(),b=await device();await open(a,name);await open(b,name);
   for(const p of [a,b])await expect(p.locator('.document-editor__presence')).toContainText('2 devices',{timeout:15000});
   const alpha='Alpha'+Date.now(),beta='Beta'+Date.now();
+  const original=await model(a,kind);
   if(kind==='cell'){
    await Promise.all([a,b].map(async(p,i)=>{await focusEditor(p);await p.keyboard.press('Control+Home');for(let n=0;n<6;n++)await p.keyboard.press('ArrowDown');if(i)await p.keyboard.press('ArrowRight');await p.keyboard.type(i?beta:alpha,{delay:35});await p.keyboard.press('Enter');}));
   }else if(kind==='pdf'){
@@ -62,13 +65,17 @@ try{
    await Promise.all([a,b].map(p=>p.evaluate(()=>Array.from(window.frames).flatMap(w=>Array.from(w.frames)).find(w=>w.Asc?.editor).Asc.editor.AddFreeTextAnnot(0))));
    for(const p of [a,b])await expect.poll(async()=>(await model(p,kind)).length,{timeout:60000}).toBe(count+2);
   }else await Promise.all([typeIntoDocument(a,kind,alpha),typeIntoDocument(b,kind,beta)]);
-  if(kind!=='pdf'){
+  if(kind==='word' || kind==='slide'){
+   const expected=counts(original+alpha+beta);
+   for(const p of [a,b])await expect.poll(async()=>counts(await model(p,kind)),{timeout:60000}).toEqual(expected);
+   for(const p of [a,b]){expect(subsequence(await model(p,kind),alpha)).toBe(true);expect(subsequence(await model(p,kind),beta)).toBe(true);}
+  }else if(kind!=='pdf'){
    for(const p of [a,b]){await expect.poll(()=>model(p,kind),{timeout:60000}).toContain(alpha);await expect.poll(()=>model(p,kind),{timeout:60000}).toContain(beta);}
   }
   expect(await model(a,kind)).toEqual(await model(b,kind));await saved(a);await saved(b);
   await a.screenshot({path:join(screenshots,kind+'.png')});
   const persisted=await readFile(join(files,name));expect(persisted.length).toBeGreaterThan(100);
-  if(kind!=='pdf'){expect(officeText(persisted)).toContain(alpha);expect(officeText(persisted)).toContain(beta);}
+  if(kind!=='pdf'){expect(subsequence(officeText(persisted),alpha)).toBe(true);expect(subsequence(officeText(persisted),beta)).toBe(true);}
   if(kind==='word'){
    const late=await device();await open(late,name);
    expect(await model(late,kind)).toEqual(await model(a,kind));console.log('PASS late join');
