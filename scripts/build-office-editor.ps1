@@ -6,6 +6,7 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path $PSScriptRoot -Parent
 $vendorPath = Join-Path $repoRoot 'third_party\ranuts-document'
 $patchPath = Join-Path $repoRoot 'patches\ranuts-document-disable-embedded-service-worker.patch'
+$collaborationPatchPath = Join-Path $repoRoot 'patches\ranuts-document-preserve-collaboration-history.patch'
 $bashPath = Join-Path $env:ProgramFiles 'Git\bin\bash.exe'
 
 function Invoke-Checked {
@@ -38,6 +39,7 @@ $pnpmEntry = Join-Path $toolsPath 'node_modules\pnpm\bin\pnpm.mjs'
 Push-Location $stagePath
 try {
     Invoke-Checked git @('apply', $patchPath)
+    Invoke-Checked git @('apply', $collaborationPatchPath)
     Invoke-Checked node @($pnpmEntry, 'install', '--frozen-lockfile', '--store-dir', (Join-Path $BuildRoot 'store'))
     $env:FILEBROWSER_PNPM_BIN_DIR = Join-Path $toolsPath 'node_modules\.bin'
     $shellScript = Join-Path $stagePath 'filebrowser-build.sh'

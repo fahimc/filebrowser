@@ -1,0 +1,13 @@
+diff --git a/lib/embed-api.ts b/lib/embed-api.ts
+index af7a401..bc1c069 100644
+--- a/lib/embed-api.ts
++++ b/lib/embed-api.ts
+@@ -206,7 +206,7 @@ async function handleMessage(event: MessageEvent): Promise<void> {
+         // The host now holds the edited bytes. A timeout fallback may have
+         // handed it the original file instead, which saves nothing -- the
+         // request cannot tell the two apart, so that mode never clears the flag.
+-        if (!returnOriginalOnTimeout && commitSavePoint(savePoint)) {
++        if (!payload.preserveChanges && !returnOriginalOnTimeout && commitSavePoint(savePoint)) {
+           markDocumentSaved();
+         }
+         postToParent(

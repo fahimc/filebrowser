@@ -12,6 +12,8 @@
       />
       <strong v-else class="document-editor__title">{{ fileName }}</strong>
       <span class="document-editor__status" role="status">{{ statusText }}</span>
+      <span v-if="collaboration" class="document-editor__presence" :title="participants.map(p => p.name).join(', ')">{{ connected ? 'Live' : 'Reconnecting…' }} · {{ participants.length }} {{ participants.length === 1 ? 'device' : 'devices' }}</span>
+      <button v-if="collaboration && dirty" type="button" class="button button--flat" :disabled="!editorReady || saving || Boolean(copyCommandId)" @click="downloadCopy">Download copy</button>
       <a class="document-editor__legal" href="https://github.com/fahimc/filebrowser/blob/drive-reskin/third_party/NOTICES.md" target="_blank" rel="noopener noreferrer">Source &amp; licenses</a>
       <button
         type="button"
@@ -42,8 +44,6 @@
 
 <script>
 import { resourcesApi } from "@/api";
-import { fetchURL } from "@/api/utils.ts";
-import { ensureViewToken } from "@/api/viewToken.js";
 import { getters, mutations, state } from "@/store";
 import { globalVars } from "@/utils/constants.js";
 import { url } from "@/utils";
@@ -51,6 +51,8 @@ import { removeLastDir } from "@/utils/url.js";
 import { notify } from "@/notify";
 import { router } from "@/router";
 import { createBlankPDF } from "@/utils/office.js";
+import { OfficeCollaboration } from "@/utils/officeCollaboration.js";
+import { markRaw } from "vue";
 
 const SAVE_DELAY_MS = 1800;
 const OFFICE_TYPES = new Set(["docx", "xlsx", "pptx", "pdf"]);
@@ -87,6 +89,12 @@ export default {
       completeSave: null,
       saveTimeout: null,
       removeNavigationGuard: null,
+      collaboration: null,
+      participants: [],
+      connected: false,
+      collaborationAttaching: false,
+      activateAfterSave: false,
+      copyCommandId: '',
     };
   },
   computed: {
@@ -141,6 +149,7 @@ export default {
     this.removeNavigationGuard?.();
     clearTimeout(this.saveTimer);
     clearTimeout(this.saveTimeout);
+    void this.collaboration?.stop();
   },
   methods: {
     editorOrigin() {
@@ -154,22 +163,28 @@ export default {
       return id;
     },
     async openExistingFile() {
-      const sharePath = this.file.path;
-      const source = this.saveSource;
-      const viewToken = this.file.viewToken || await ensureViewToken(source);
-      const viewURL = this.isShare
-        ? resourcesApi.getRawViewURLPublic(this.shareContext, [sharePath], viewToken)
-        : resourcesApi.getRawViewURL(source, this.file.path, viewToken);
-      const headers = {};
-      if (this.isShare) {
-        const password = localStorage.getItem(`sharepass:${this.shareContext.hash}`);
-        if (password) headers["X-SHARE-PASSWORD"] = encodeURIComponent(password);
-      }
-      const response = await fetchURL(viewURL, { headers });
-      const buffer = await response.arrayBuffer();
-      this.documentBuffer = buffer;
-      this.documentOpened = false;
-      if (this.bridgeReady) this.openEditorBuffer();
+      await this.startCollaboration(this.file.path);
+      return;
+    },
+    async startCollaboration(path) {
+      await this.collaboration?.stop();
+      this.collaboration = markRaw(new OfficeCollaboration({
+        frame: this.$refs.editorFrame, source:this.saveSource, path,
+        share:this.shareContext, edit:this.canEdit,
+        onState:({connected,participants,revision,saved,error})=>{
+          this.connected=connected;this.participants=participants;
+          if(!connected){this.statusText=`Reconnecting… ${error || ''}`;return;}
+          if(!this.saving && !this.dirty && revision<=saved)this.statusText=this.canEdit ? (saved>0 || this.createdInStorage ? 'All changes saved' : 'Ready') : 'View only';
+          if(!this.saving && this.dirty && revision<=saved && !this.collaboration.outbox && !this.collaboration.hasLocalChanges()){
+            this.dirty=false;this.statusText='All changes saved';
+          }
+        },
+        onChange:()=>{if(this.canEdit){this.dirty=true;this.dirtyRevision++;if(!this.saving)this.scheduleSave();}},
+      }));
+      this.documentBuffer=await this.collaboration.join();
+      this.documentOpened=false;
+      this.editorReady=false;
+      if(this.bridgeReady)this.openEditorBuffer();
     },
     openEditorBuffer() {
       if (!this.documentBuffer || this.documentOpened) return;
@@ -193,7 +208,11 @@ export default {
         if (!this.editorReady) this.statusText = "Loading document…";
       } else if (type === "document:loaded") {
         this.editorReady = true;
-        this.statusText = this.canEdit ? "Ready" : "View only";
+        this.statusText = this.canEdit ? (this.createdInStorage ? "All changes saved" : "Ready") : "View only";
+        if(this.collaboration && !this.collaboration.win && !this.collaborationAttaching){
+          this.collaborationAttaching=true;
+          this.collaboration.attach().catch(error=>this.showError(error)).finally(()=>{this.collaborationAttaching=false;});
+        }
         if (this.dirty && this.canEdit) this.scheduleSave();
       } else if (type === "document:dirty-changed") {
         this.editorDirty = Boolean(payload.dirty);
@@ -204,7 +223,12 @@ export default {
           this.scheduleSave();
         }
       } else if (type === "document:saved") {
-        if (this.pendingCommandId && id === this.pendingCommandId) {
+        if(this.copyCommandId && id===this.copyCommandId){
+          this.copyCommandId='';
+          const href=URL.createObjectURL(payload.file);
+          const link=document.createElement('a');link.href=href;link.download=this.fileName;link.click();
+          setTimeout(()=>URL.revokeObjectURL(href),1000);
+        } else if (this.pendingCommandId && id === this.pendingCommandId) {
           this.persistDocument(payload).catch((error) => this.showError(error));
         }
       } else if (type === "document:error") {
@@ -214,6 +238,9 @@ export default {
     scheduleSave() {
       clearTimeout(this.saveTimer);
       this.saveTimer = setTimeout(() => this.requestSave(), SAVE_DELAY_MS);
+    },
+    downloadCopy() {
+      this.copyCommandId=this.sendCommand('document:save',{preserveChanges:true});
     },
     requestSave() {
       if (!this.canEdit || (!this.dirty && !this.isNewDocument) || this.saving || !this.editorReady) return;
@@ -232,10 +259,12 @@ export default {
       this.saveTimeout = setTimeout(() => this.showError(new Error("Saving timed out. Your changes are still open; try Save again.")), 60000);
       this.saveRequestedAt = this.dirtyRevision;
       this.statusText = "Preparing save…";
-      this.pendingCommandId = this.sendCommand("document:save");
-      if (!this.pendingCommandId) {
-        this.showError(new Error("Editor is not ready"));
-      }
+      const prepare=this.collaboration ? this.collaboration.prepareCheckpoint() : Promise.resolve();
+      prepare.then(()=>{
+        this.saveRequestedAt=this.dirtyRevision;
+        this.pendingCommandId=this.sendCommand("document:save",{preserveChanges:Boolean(this.collaboration)});
+        if(!this.pendingCommandId)this.showError(new Error("Editor is not ready"));
+      }).catch(error=>this.showError(error));
     },
     async persistDocument(payload) {
       clearTimeout(this.saveTimeout);
@@ -250,13 +279,16 @@ export default {
         : this.file.path;
 
       this.statusText = "Saving to FileBrowser…";
-      if (this.isNewDocument && !this.createdInStorage) {
+      if(this.collaboration){
+        await this.collaboration.checkpoint(file);
+      } else if (this.isNewDocument && !this.createdInStorage) {
         if (this.isShare) {
           await resourcesApi.postPublic(this.shareContext.hash, path, file, false);
         } else {
           await resourcesApi.post(this.saveSource, path, file, false);
         }
         this.createdInStorage = true;
+        this.activateAfterSave=true;
         if (!this.canEdit) this.sendCommand("document:set-readonly", { readonly: true });
         mutations.setReload(true);
       } else if (this.isShare) {
@@ -273,12 +305,19 @@ export default {
       if (this.dirty) this.scheduleSave();
       this.completeSave?.(true);
       this.completeSave = null;
+      if(this.activateAfterSave && !this.dirty){
+        this.activateAfterSave=false;
+        clearTimeout(this.saveTimer);
+        await this.startCollaboration(this.targetPath);
+      }
     },
     onFileNameChange() {
       if (!this.createdInStorage) this.targetPath = "";
       if (this.dirty && this.canEdit) this.scheduleSave();
     },
     showError(error) {
+      this.copyCommandId='';
+      this.collaboration?.cancelCheckpoint();
       const message = error?.message || String(error);
       this.statusText = message;
       if (this.saving) this.dirty = true;
@@ -288,6 +327,7 @@ export default {
       this.completeSave = null;
       this.pendingCommandId = "";
       notify.showError(message);
+      if(this.collaboration && this.canEdit && !/outside this session|expired|limit reached|403|401/.test(message))this.scheduleSave();
     },
     beforeUnload(event) {
       if (this.dirty || this.saving) {
@@ -364,6 +404,12 @@ export default {
 .document-editor__status {
   color: var(--textSecondary);
   font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.document-editor__presence {
+  color: var(--textSecondary);
+  font-size: 0.8rem;
   white-space: nowrap;
 }
 

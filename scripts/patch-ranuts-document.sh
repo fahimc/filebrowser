@@ -8,3 +8,7 @@ PATCH_FILE="$ROOT/patches/ranuts-document-disable-embedded-service-worker.patch"
 if ! grep -q "if (!isEmbedded && 'serviceWorker' in navigator)" "$VENDOR/index.ts"; then
   git -C "$VENDOR" apply "$PATCH_FILE"
 fi
+
+if ! grep -q 'payload.preserveChanges' "$VENDOR/lib/embed-api.ts"; then
+  git -C "$VENDOR" apply "$ROOT/patches/ranuts-document-preserve-collaboration-history.patch"
+fi

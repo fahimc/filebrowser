@@ -82,15 +82,15 @@ try {
 
   if (!creationOnly) {
   const kind = await openFile('Quarterly report.docx');
-  await page.route('**/api/resources?*', async (route) => {
-    if (route.request().method() === 'PUT') await route.fulfill({ status: 503, contentType: 'text/plain', body: 'Simulated save failure' });
+  await page.route('**/api/office/checkpoint?*', async (route) => {
+    if (route.request().method() === 'POST') await route.fulfill({ status: 503, contentType: 'text/plain', body: 'Simulated save failure' });
     else await route.continue();
   });
   const retryMarker = `OfficeSaveRetry${Date.now()}`;
   await typeIntoDocument(page, kind, retryMarker);
   await expect(status).toContainText('Simulated save failure', { timeout: 60000 });
   await expect(page.locator('.document-editor__save')).toBeEnabled();
-  await page.unroute('**/api/resources?*');
+  await page.unroute('**/api/office/checkpoint?*');
   await page.locator('.document-editor__save').click();
   await assertSaved('Quarterly report.docx', retryMarker);
   const closeMarker = `Flush${Date.now()}`;

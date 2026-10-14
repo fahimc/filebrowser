@@ -1206,6 +1206,11 @@ func resourcePutHandler(w http.ResponseWriter, r *http.Request, d *Context) (int
 		return http.StatusMethodNotAllowed, errPutPathIsDirectory
 	}
 
+	if r.Context().Value(officeWriteKey{}) != true {
+		if physical, resolveErr := filepath.EvalSymlinks(filepath.Join(idx.Path, fullIndexPath)); resolveErr == nil && officeSessions.Active(physical) {
+			return http.StatusLocked, fmt.Errorf("file is being edited in a live Office session; reopen it in the current editor before saving")
+		}
+	}
 	return putResourceWithQuota(w, r, d, source, fullIndexPath)
 }
 
@@ -1246,6 +1251,11 @@ func publicPutHandler(w http.ResponseWriter, r *http.Request, d *Context) (int, 
 	}
 	if idx.Config.ReadOnly {
 		return http.StatusForbidden, fmt.Errorf("source is read-only")
+	}
+	if r.Context().Value(officeWriteKey{}) != true {
+		if physical, resolveErr := filepath.EvalSymlinks(filepath.Join(idx.Path, resolvedPath)); resolveErr == nil && officeSessions.Active(physical) {
+			return http.StatusLocked, fmt.Errorf("file is being edited in a live Office session")
+		}
 	}
 	return putResourceWithQuota(w, r, d, sourceName, resolvedPath)
 }

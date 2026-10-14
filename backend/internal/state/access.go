@@ -2,17 +2,33 @@ package state
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/gtsteffaniak/filebrowser/backend/internal/database/access"
 	"github.com/gtsteffaniak/filebrowser/backend/internal/utils"
 	"github.com/gtsteffaniak/filebrowser/backend/pkg/indexing"
 	"github.com/gtsteffaniak/filebrowser/backend/pkg/indexing/iteminfo"
+	"github.com/gtsteffaniak/filebrowser/backend/pkg/settings"
 )
 
 // AccessPermitted reports whether username may access indexPath on sourcePath.
 // When accessDb is not initialized, access is allowed.
 func AccessPermitted(sourcePath string, indexPath utils.IndexPath, username string) bool {
+	// Recovery journals can contain documents from several sources. Never expose
+	// them through a broad source or a symlink pointing into the private cache.
+	journalRoot, _ := filepath.Abs(filepath.Join(settings.Config.Server.CacheDir, "office-sessions"))
+	if resolved, err := filepath.EvalSymlinks(journalRoot); err == nil {
+		journalRoot = resolved
+	}
+	candidate, _ := filepath.Abs(filepath.Join(sourcePath, indexPath.String()))
+	if resolved, err := filepath.EvalSymlinks(candidate); err == nil {
+		candidate = resolved
+	}
+	if relative, err := filepath.Rel(journalRoot, candidate); err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+		return false
+	}
 	if accessDb == nil {
 		return true
 	}
