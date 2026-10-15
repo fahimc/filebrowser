@@ -1,4 +1,8 @@
-# <img src="frontend/src/assets/branding/my_drive.svg" alt="" width="40" height="40"> My Drive
+<p align="center">
+  <img src="frontend/src/assets/branding/my_drive.svg" alt="My Drive logo" width="112" height="112">
+</p>
+
+<h1 align="center">My Drive</h1>
 
 A self-hosted file manager with a Drive-style interface, browser Office editing, photo browsing and an optional image editor. Built on FileBrowser Quantum and connected to [One Workspace](https://github.com/oneworkspacestudio/one-workspace) through MyAccounts.
 
@@ -6,7 +10,7 @@ A self-hosted file manager with a Drive-style interface, browser Office editing,
 
 ![Current My Drive interface with shared controls and compact sidebar selection](docs/images/drive-current.png)
 
-*Latest source interface, captured in an isolated preview with sample photos and a document. Published EXEs retain the interface embedded when they were built.*
+*Earlier interface preview with sample files. The current project logos are shown above and in the app table; screenshots may retain older branding. Check the release notes for the included app versions.*
 
 ## Your files, with more ways to work
 
