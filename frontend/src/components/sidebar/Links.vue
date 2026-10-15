@@ -103,6 +103,11 @@
                   :val-text="baseSidebarCategory(link.category) === 'source-hybrid-2' ? getDiskUsed(link, sourceInfo[link.sourceName] || {}) : null"
                   :max="getUsageTotal(link, sourceInfo[link.sourceName] || {})"
                   :status="getProgressBarStatus(link, sourceInfo[link.sourceName] || {})"
+                  size="small"
+                  bg-color="transparent"
+                  :bar-border-radius="2"
+                  text-align="left"
+                  text-fg-color="var(--textSecondary)"
                   unit="bytes">
                 </ProgressBar>
                 <!-- For other source types, show single bar -->
@@ -113,6 +118,11 @@
                   :val-background="getProgressBarReserved(sourceInfo[link.sourceName] || {})"
                   :max="getProgressBarMax(link, sourceInfo[link.sourceName] || {})"
                   :status="getProgressBarStatus(link, sourceInfo[link.sourceName] || {})"
+                  size="small"
+                  bg-color="transparent"
+                  :bar-border-radius="2"
+                  text-align="left"
+                  text-fg-color="var(--textSecondary)"
                   unit="bytes">
                 </ProgressBar>
               </div>

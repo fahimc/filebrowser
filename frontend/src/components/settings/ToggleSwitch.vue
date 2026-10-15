@@ -283,7 +283,7 @@ export default {
   width: 26px;
   left: 6px;
   bottom: 4px;
-  background-color: white;
+  background-color: var(--drive-muted);
   transition: transform 0.4s;
 }
 
@@ -297,7 +297,7 @@ export default {
   cursor: pointer;
   inset: 0;
   transition: background-color 0.4s;
-  background-color: gray;
+  background-color: var(--drive-surface-high);
 }
 
 .switch--icon-mode .slider {
@@ -381,6 +381,7 @@ input:focus-visible + .slider {
 
 input:checked + .slider::before {
   transform: translateX(26px);
+  background-color: var(--drive-on-primary);
 }
 
 .toggle-container--neutral input:checked + .slider {

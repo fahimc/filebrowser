@@ -1,37 +1,4 @@
-/* Google Drive inspired workspace skin for the local FileBrowser fork. */
-:root {
-  --background: #f8fafd;
-  --alt-background: #f8fafd;
-  --surfacePrimary: #ffffff;
-  --surfaceSecondary: #e8eaed;
-  --textPrimary: #202124;
-  --textSecondary: #5f6368;
-  --divider: #dadce0;
-  --iconBackground: #f1f3f4;
-  --activeWhiteIcon: #ffffff;
-  --primaryColor: #1a73e8;
-  --panel-bg: #f8fafd;
-  --panel-blur: none;
-  --borderRadius: 0.75rem;
-  --borderWidth: 1px;
-  --hoverOverlay: rgb(60 64 67 / 8%);
-}
-
-.dark-mode {
-  --background: #202124;
-  --alt-background: #202124;
-  --surfacePrimary: #292a2d;
-  --surfaceSecondary: #3c4043;
-  --textPrimary: #e8eaed;
-  --textSecondary: #9aa0a6;
-  --divider: #3c4043;
-  --iconBackground: #303134;
-  --activeWhiteIcon: #ffffff;
-  --primaryColor: #8ab4f8;
-  --panel-bg: #202124;
-  --hoverOverlay: rgb(232 234 237 / 9%);
-}
-
+/* Drive app layout. Shared colours and controls live in drive-tokens/controls.css. */
 body {
   background: var(--background);
   color: var(--textPrimary);
@@ -53,14 +20,14 @@ header.flexbar {
   flex: 0 0 auto;
   gap: 0.65rem;
   min-width: 9.2rem;
-  color: #5f6368;
+  color: var(--textSecondary);
   font-size: 1.38rem;
   font-weight: 400;
   letter-spacing: -0.035em;
 }
 
 .drive-brand:hover {
-  color: #5f6368;
+  color: var(--textSecondary);
 }
 
 .drive-brand__logo {
@@ -74,50 +41,32 @@ header.flexbar .search-bar-container {
   min-width: 10rem;
   max-width: 45rem;
   margin: 0 auto;
-  border-radius: 0.5rem;
+  border-radius: var(--drive-radius-full);
   padding: 0.5rem 1rem;
-  background: #e9eef6;
-  color: #5f6368;
+  background: var(--drive-surface-high);
+  color: var(--textSecondary);
   box-shadow: none;
-}
-
-.dark-mode header.flexbar .search-bar-container {
-  background: #303134;
-  color: var(--textPrimary);
 }
 
 header.flexbar .search-bar-container:hover {
   filter: none;
-  background: #e3e8f0;
-}
-
-.dark-mode header.flexbar .search-bar-container:hover {
-  background: #3c4043;
+  background: var(--drive-surface-high);
 }
 
 #search-bar-input,
 #search-bar-input::placeholder {
-  color: #5f6368;
+  color: var(--textSecondary);
   opacity: 1;
 }
 
-.dark-mode #search-bar-input,
-.dark-mode #search-bar-input::placeholder {
-  color: #bdc1c6;
-}
-
 header.flexbar .search-bar-container .material-symbols {
-  color: #5f6368;
+  color: var(--textSecondary);
 }
 
 #main {
-  background: #ffffff;
+  background: var(--drive-surface);
   border-radius: 1.25rem 1.25rem 0 0;
   color: var(--textPrimary);
-}
-
-.dark-mode #main {
-  background: #202124;
 }
 
 #sidebar {
@@ -153,35 +102,25 @@ header.flexbar .search-bar-container .material-symbols {
   gap: 0.8rem;
   margin: 0.25rem 0 1rem !important;
   padding: 0 1.25rem !important;
-  border: 1px solid #dadce0;
+  border: 1px solid var(--divider);
   border-radius: 1rem;
-  background: #ffffff;
-  color: #3c4043;
+  background: var(--drive-surface);
+  color: var(--textSecondary);
   font-size: 0.9rem;
   font-weight: 500;
   box-shadow: 0 1px 2px rgb(60 64 67 / 20%), 0 1px 3px 1px rgb(60 64 67 / 10%);
 }
 
-.dark-mode #sidebar .file-actions {
-  border-color: #5f6368;
-  background: #303134;
-  color: var(--textPrimary);
-}
-
 #sidebar .file-actions:hover {
-  background: #f8fafd;
+  background: var(--drive-canvas);
   box-shadow: 0 2px 4px rgb(60 64 67 / 20%), 0 2px 6px 2px rgb(60 64 67 / 10%) !important;
-  transform: translateY(-1px);
-}
 
-.dark-mode #sidebar .file-actions:hover {
-  background: #3c4043;
 }
 
 #sidebar .file-actions i {
   margin: 0;
   padding: 0 !important;
-  color: #1a73e8;
+  color: var(--primaryColor);
   font-size: 1.55rem;
 }
 
@@ -191,8 +130,8 @@ header.flexbar .search-bar-container .material-symbols {
 }
 
 #sidebar .sidebar-links-header .action {
-  border-radius: 999px;
-  color: #5f6368;
+  border-radius: var(--drive-radius-sm);
+  color: var(--textSecondary);
 }
 
 #sidebar .sidebar-links-content {
@@ -210,7 +149,7 @@ header.flexbar .search-bar-container .material-symbols {
   flex-shrink: 0;
   margin: 0;
   padding: 0 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--drive-radius-sm);
   color: var(--textPrimary);
   font-size: 0.875rem;
   font-weight: 500;
@@ -222,14 +161,8 @@ header.flexbar .search-bar-container .material-symbols {
 
 #sidebar .sidebar-link-button.active,
 #sidebar .source-button.active {
-  background: #c2e7ff;
-  color: #001d35;
-}
-
-.dark-mode #sidebar .sidebar-link-button.active,
-.dark-mode #sidebar .source-button.active {
-  background: #004a77;
-  color: #d3e3fd;
+  background: var(--drive-nav-selected);
+  color: var(--textPrimary);
 }
 
 #sidebar .sidebar-link-button:hover,
@@ -241,7 +174,7 @@ header.flexbar .search-bar-container .material-symbols {
 
 #sidebar .sidebar-link-button.active:hover,
 #sidebar .source-button.active:hover {
-  background: #b7dcf5;
+  background: var(--drive-nav-selected-hover);
 }
 
 #sidebar .source-container {
@@ -256,7 +189,7 @@ header.flexbar .search-bar-container .material-symbols {
 }
 
 #sidebar .link-icon {
-  color: #5f6368;
+  color: var(--textSecondary);
 }
 
 #main .listing-view-root {
@@ -265,12 +198,8 @@ header.flexbar .search-bar-container .material-symbols {
 
 .listing-items {
   padding: 0 1rem 3rem;
-  background: #ffffff;
+  background: var(--drive-surface);
   color: var(--textPrimary);
-}
-
-.dark-mode .listing-items {
-  background: #202124;
 }
 
 .listing-items h2 {
@@ -285,14 +214,10 @@ header.flexbar .search-bar-container .material-symbols {
   border: 0;
   border-bottom: 1px solid var(--divider);
   border-radius: 0;
-  background: #ffffff;
+  background: var(--drive-surface);
   color: var(--textSecondary);
   font-size: 0.8rem;
   font-weight: 500;
-}
-
-.dark-mode #main .listing-item-header.card {
-  background: #202124;
 }
 
 .listing-item-header .active,
@@ -305,14 +230,9 @@ header.flexbar .search-bar-container .material-symbols {
 .listing-items.compact .listing-item {
   border: 0;
   border-bottom: 1px solid color-mix(in srgb, var(--divider) 70%, transparent);
-  background: #ffffff;
+  background: var(--drive-surface);
   color: var(--textPrimary);
   transition: background-color 120ms ease;
-}
-
-.dark-mode .listing-items.list .listing-item,
-.dark-mode .listing-items.compact .listing-item {
-  background: #202124;
 }
 
 .listing-items.list .listing-item:hover,
@@ -320,25 +240,15 @@ header.flexbar .search-bar-container .material-symbols {
   width: 100% !important;
   margin-left: 0 !important;
   padding-left: 0.5em !important;
-  background: #f8fafd;
+  background: var(--drive-canvas);
   transform: none;
   box-shadow: none !important;
 }
 
-.dark-mode .listing-items.list .listing-item:hover,
-.dark-mode .listing-items.compact .listing-item:hover {
-  background: #292a2d;
-}
-
 .listing-items.list .listing-item[aria-selected="true"],
 .listing-items.compact .listing-item[aria-selected="true"] {
-  background: #e8f0fe;
+  background: var(--drive-selected);
   border-radius: 0;
-}
-
-.dark-mode .listing-items.list .listing-item[aria-selected="true"],
-.dark-mode .listing-items.compact .listing-item[aria-selected="true"] {
-  background: #303b4b;
 }
 
 #breadcrumbs ul {
@@ -357,16 +267,11 @@ header.flexbar .search-bar-container .material-symbols {
   border: 0;
   border-radius: 0.35rem;
   background: transparent;
-  color: #5f6368;
+  color: var(--textSecondary);
 }
 
 #breadcrumbs ul li a:hover {
-  background: #f1f3f4;
-  color: #202124;
-}
-
-.dark-mode #breadcrumbs ul li a:hover {
-  background: #303134;
+  background: var(--drive-surface-low);
   color: var(--textPrimary);
 }
 

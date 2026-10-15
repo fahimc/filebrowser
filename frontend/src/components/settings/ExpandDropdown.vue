@@ -639,7 +639,7 @@ export default {
 }
 
 .menu-panel {
-  background-color: var(--background);
+  background-color: var(--drive-surface);
   padding: 0.5em;
   display: flex;
   flex-direction: column;
@@ -651,8 +651,9 @@ export default {
 
 .expand-dropdown-anchor {
   box-sizing: border-box;
-  border: var(--borderWidth) solid var(--surfaceSecondary);
-  box-shadow: var(--surfaceElevationShadow);
+  border: 1px solid var(--drive-outline);
+  border-radius: var(--drive-radius-sm);
+  box-shadow: none;
   justify-content: center;
   transition:
     border-bottom-left-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -740,8 +741,8 @@ export default {
 }
 
 .expand-dropdown-trigger:hover:not(:disabled, .expand-dropdown--transparent:not(.expand-dropdown--open) .expand-dropdown-trigger) {
-  width: 98% !important;
-  margin-left: 1% !important;
+  width: 100% !important;
+  margin-left: 0 !important;
   padding-left: 0.5em !important;
 }
 
@@ -762,7 +763,7 @@ export default {
   box-sizing: border-box;
   overflow: hidden;
   width: 100%;
-  background-color: var(--background);
+  background-color: var(--drive-surface);
   border: var(--borderWidth) solid var(--surfaceSecondary);
   padding: 0 0.5em 0.5em;
   justify-content: flex-start;

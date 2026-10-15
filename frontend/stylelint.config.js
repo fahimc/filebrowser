@@ -14,6 +14,7 @@ export default {
   reportInvalidScopeDisables: true,
  "referenceFiles": [
    "src/css/_variables.css",
+   "src/css/drive-tokens.css",
    "src/css/_fab.css",
    "public/css/variables.css"
  ],

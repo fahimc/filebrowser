@@ -4,21 +4,18 @@
     :class="{ active: active, 'behind-overlay': behindOverlay, 'scrollable': isSettings }"
     :style="{ width: `${sidebarWidth}em`, left: active ? '0' : `-${sidebarWidth}em` }"
   >
-    <div v-if="shouldShow" class="button release-banner">
+    <div v-if="shouldShow" class="release-banner">
       <a :href="releaseUrl">{{ $t("sidebar.updateIsAvailable") }}</a>
-      <i
+      <button
+        type="button"
         @click="setSeenUpdate"
-        @keydown.enter.prevent="setSeenUpdate"
-        @keydown.space.prevent="setSeenUpdate"
-        role="button"
-        tabindex="0"
-        aria-label="close-banner"
-        class="material-symbols"
-      >close</i>
+        :aria-label="$t('general.close')"
+        class="drive-icon-button"
+      ><i class="material-symbols" aria-hidden="true">close</i></button>
     </div>
-    <div v-if="showPwaInstall" class="button release-banner">
-      <button type="button" @click="installPwa">{{ $t("pwa.install") }}</button>
-      <i @click="dismissPwaInstall" role="button" tabindex="0" aria-label="close-banner" class="material-symbols">close</i>
+    <div v-if="showPwaInstall" class="release-banner">
+      <button type="button" class="drive-button drive-button--text" @click="installPwa">{{ $t("pwa.install") }}</button>
+      <button type="button" class="drive-icon-button" @click="dismissPwaInstall" :aria-label="$t('general.close')"><i class="material-symbols" aria-hidden="true">close</i></button>
     </div>
     <SidebarSettings v-if="isSettings"></SidebarSettings>
     <SidebarGeneral v-if="!isSettings"></SidebarGeneral>

@@ -1,5 +1,15 @@
 <template>
   <div class="card headline-card">
+    <!-- Sidebar file actions -->
+    <transition v-if="shareInfo.shareType !== 'upload'" name="expand" @before-enter="beforeEnter" @enter="enter"
+      @leave="leave">
+      <div v-if="!hideSidebarFileActions && isListingView" class="card-wrapper">
+        <button type="button" @click="openContextMenu" :aria-label="$t('general.new', { suffix: '' })" data-testid="file-actions-button" class="action file-actions">
+          <i class="material-symbols">add</i>
+          <span>{{ $t("general.new", { suffix: "" }) }}</span>
+        </button>
+      </div>
+    </transition>
     <div v-if="isDataLoaded && shouldShowLogin" class="card-wrapper user-card" :class="{ 'extra-padding': !disableQuickToggles }">
       <div v-if="settingsAllowed" class="inner-card user-card__profile">
         <a href="/settings#profile-main" class="person-button action button"
@@ -33,32 +43,22 @@
 
     <div v-if="!disableQuickToggles" class="card-wrapper" @mouseleave="hideTooltip">
       <div class="quick-toggles" :class="{ 'extra-padding': hasCreateOptions }">
-        <div class="clickable" :class="{ active: user?.singleClick }" @click="toggleClick"
+        <button type="button" class="drive-icon-button" :aria-label="$t('index.toggleClick')" :aria-pressed="!!user?.singleClick" :class="{ active: user?.singleClick }" @click="toggleClick"
           @mouseenter="showTooltip($event, $t('index.toggleClick'))" @mouseleave="hideTooltip" v-if="!isInvalidShare">
           <i class="material-symbols">ads_click</i>
-        </div>
-        <div aria-label="Toggle Theme" v-if="darkModeTogglePossible" class="clickable"
+        </button>
+        <button type="button" aria-label="Toggle Theme" v-if="darkModeTogglePossible" class="drive-icon-button" :aria-pressed="!!user?.darkMode"
           :class="{ active: user?.darkMode }" @click="toggleDarkMode"
           @mouseenter="showTooltip($event, $t('index.toggleDark'))" @mouseleave="hideTooltip">
           <i class="material-symbols">dark_mode</i>
-        </div>
-        <div class="clickable" :class="{ active: isStickySidebar }" @click="toggleSticky"
+        </button>
+        <button type="button" class="drive-icon-button" :aria-label="$t('index.toggleSticky')" :aria-pressed="isStickySidebar" :class="{ active: isStickySidebar }" @click="toggleSticky"
           @mouseenter="showTooltip($event, $t('index.toggleSticky'))" @mouseleave="hideTooltip" v-if="!isMobile">
           <i class="material-symbols">push_pin</i>
-        </div>
+        </button>
       </div>
     </div>
 
-    <!-- Sidebar file actions -->
-    <transition v-if="shareInfo.shareType !== 'upload'" name="expand" @before-enter="beforeEnter" @enter="enter"
-      @leave="leave">
-      <div v-if="!hideSidebarFileActions && isListingView" class="card-wrapper">
-        <button type="button" @click="openContextMenu" :aria-label="$t('general.new', { suffix: '' })" data-testid="file-actions-button" class="action file-actions">
-          <i class="material-symbols">add</i>
-          <span>{{ $t("general.new", { suffix: "" }) }}</span>
-        </button>
-      </div>
-    </transition>
     <!-- Hidden marker for tests to detect when file actions should be available -->
     <div v-if="isDataLoaded && isListingView && shareInfo.shareType !== 'upload'"
          data-testid="file-actions-ready"
@@ -329,9 +329,9 @@ button.action {
 }
 
 .quick-toggles .active {
-  background-color: var(--primaryColor) !important;
+  background-color: var(--drive-selected);
   border-radius: 10em;
-  color: white;
+  color: var(--drive-on-selected);
 }
 
 .card-wrapper {

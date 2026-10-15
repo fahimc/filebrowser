@@ -762,6 +762,9 @@ export default {
       }, 50);
     },
     keyEvent(event) {
+      if (event.defaultPrevented || event.target?.closest?.(
+        "button, input, textarea, select, [contenteditable='true'], a[href]:not(.listing-item)"
+      )) return;
       const { key, ctrlKey, metaKey, altKey, which } = event;
       const isArrowKey = key === 'ArrowUp' ||
                          key === 'ArrowDown' ||

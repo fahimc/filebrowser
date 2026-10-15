@@ -74,6 +74,7 @@ Start with [contributing instructions](CONTRIBUTING.md). Additional build and in
 - [Portable Photos build](scripts/build-photos.ps1)
 - [Photo Editor source and FileBrowser adapter](https://github.com/fahimc/miniPaint)
 - [MyAccounts configuration](MYACCOUNTS.md)
+- [Shared Drive design system and component reference](docs/DESIGN-SYSTEM.md)
 
 No GitHub Actions build is required for the local packages. Runtime files, credentials and private previews belong outside the repository.
 

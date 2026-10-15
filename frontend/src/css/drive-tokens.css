@@ -1,0 +1,86 @@
+/* Local design tokens. Roles and reference measurements: docs/DESIGN-SYSTEM.md. */
+:root {
+  --drive-canvas: #f8fafd;
+  --drive-surface: #fff;
+  --drive-surface-low: #f0f4f9;
+  --drive-surface-high: #e9eef6;
+  --drive-ink: #1f1f1f;
+  --drive-muted: #444746;
+  --drive-outline: #747775;
+  --drive-divider: #e1e3e1;
+  --drive-primary: #0b57d0;
+  --drive-on-primary: #fff;
+  --drive-selected: #c2e7ff;
+  --drive-on-selected: #001d35;
+  --drive-selected-hover: #b3d7ef;
+  --drive-nav-selected: #e8f0fe;
+  --drive-nav-selected-hover: #dce6f7;
+  --drive-hover: rgb(31 31 31 / 8%);
+  --drive-danger: #b3261e;
+  --drive-on-danger: #fff;
+  --drive-danger-container: #f9dedc;
+  --drive-radius-sm: 8px;
+  --drive-radius-md: 12px;
+  --drive-radius-lg: 16px;
+  --drive-radius-xl: 24px;
+  --drive-radius-full: 999px;
+  --drive-space-1: 4px;
+  --drive-space-2: 8px;
+  --drive-space-3: 12px;
+  --drive-space-4: 16px;
+  --drive-space-6: 24px;
+  --drive-control-height: 40px;
+  --drive-icon-size: 24px;
+  --drive-shadow-1: 0 1px 3px rgb(60 64 67 / 20%), 0 1px 2px rgb(60 64 67 / 12%);
+  --drive-shadow-2: 0 4px 12px rgb(60 64 67 / 18%), 0 1px 3px rgb(60 64 67 / 12%);
+  --drive-duration: 120ms;
+  --header-height: calc(64px + var(--safe-area-top));
+
+  /* Existing components consume these compatibility aliases. */
+  --background: var(--drive-canvas);
+  --alt-background: var(--drive-surface-low);
+  --surfacePrimary: var(--drive-surface);
+  --surfaceSecondary: var(--drive-surface-high);
+  --textPrimary: var(--drive-ink);
+  --textSecondary: var(--drive-muted);
+  --divider: var(--drive-divider);
+  --iconBackground: var(--drive-surface-low);
+  --activeWhiteIcon: var(--drive-on-primary);
+  --primaryColor: var(--drive-primary);
+  --panel-bg: var(--drive-canvas);
+  --panel-blur: none;
+  --borderRadius: var(--drive-radius-md);
+  --borderWidth: 1px;
+  --hoverOverlay: var(--drive-hover);
+  --surfaceElevationShadow: var(--drive-shadow-1);
+}
+
+:root.dark-mode {
+  --drive-canvas: #1b1b1b;
+  --drive-surface: #202124;
+  --drive-surface-low: #282a2c;
+  --drive-surface-high: #333537;
+  --drive-ink: #e3e3e3;
+  --drive-muted: #c4c7c5;
+  --drive-outline: #8e918f;
+  --drive-divider: #444746;
+  --drive-primary: #a8c7fa;
+  --drive-on-primary: #062e6f;
+  --drive-selected: #004a77;
+  --drive-on-selected: #c2e7ff;
+  --drive-selected-hover: #105984;
+  --drive-nav-selected: #26364d;
+  --drive-nav-selected-hover: #30415b;
+  --drive-hover: rgb(227 227 227 / 8%);
+  --drive-danger: #f2b8b5;
+  --drive-on-danger: #601410;
+  --drive-danger-container: #601410;
+  --drive-shadow-1: 0 1px 3px rgb(0 0 0 / 35%);
+  --drive-shadow-2: 0 4px 16px rgb(0 0 0 / 40%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --drive-duration: 0ms;
+  }
+}
