@@ -4,9 +4,9 @@ A self-hosted file manager with a Drive-style interface, browser Office editing,
 
 [Download Windows previews](https://github.com/fahimc/filebrowser/releases) · [MyAccounts setup](MYACCOUNTS.md) · [Office](OFFICE.md) · [Photos](PHOTOS.md) · [Suite installer](https://github.com/fahimc/one-workspace)
 
-![My Drive browsing sample images, with Photos and Photo Editor in the sidebar](docs/images/drive.png)
+![Current My Drive interface with shared controls and compact sidebar selection](docs/images/drive-current.png)
 
-*Actual interface capture from an isolated preview using sample files.*
+*Latest source interface, captured in an isolated preview with sample photos and a document. Published EXEs retain the interface embedded when they were built.*
 
 ## Your files, with more ways to work
 

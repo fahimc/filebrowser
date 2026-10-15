@@ -84,3 +84,13 @@ and browser verification above applies; no executable release is requested.
 Concurrent Photos/upload files remain outside this commit, as do the two
 original untracked preview artifacts. Use a normal push to the user-owned
 fahimc/filebrowser fork, never the upstream origin remote.
+
+Publication completed at 70ff763dcfc80ba5e17377804a05924a3682a24e on fork/master.
+User then requested refreshing the main README app picture. New
+docs/images/drive-current.png captures the corrected UI with generic sample
+photos and a synthetic DOCX from the isolated NTFS fixture on loopback19974.
+README uses this new path so it no longer displays the older skin. Caption
+distinguishes current source from existing embedded EXEs. Only README, the
+new capture and this handoff belong to this documentation follow-up.
+Both main README renders were inspected at1440/430px; referenced local assets
+and Markdown targets resolve. No app rebuild/release is part of this update.
