@@ -2,7 +2,8 @@ param(
  [string]$BuildRoot=(Join-Path $env:LOCALAPPDATA 'FileBrowserBuild\photos'),
  [string]$OutputDirectory='',
  [string]$ServerUrl='http://127.0.0.1:8080',
- [string]$GoExecutable='go'
+ [string]$GoExecutable='go',
+ [string]$Version='photos-preview'
 )
 $ErrorActionPreference='Stop'
 $repoRoot=Split-Path $PSScriptRoot -Parent
@@ -14,6 +15,8 @@ Copy-Item (Join-Path $repoRoot 'frontend\package.json'),(Join-Path $repoRoot 'fr
 New-Item -ItemType Directory (Join-Path $frontend 'photos') -Force | Out-Null
 Copy-Item (Join-Path $repoRoot 'frontend\photos\*') (Join-Path $frontend 'photos') -Force
 Copy-Item (Join-Path $repoRoot 'frontend\src\components\photos\*') (Join-Path $frontend 'src\components\photos') -Force
+New-Item -ItemType Directory (Join-Path $frontend 'src\utils') -Force | Out-Null
+Copy-Item (Join-Path $repoRoot 'frontend\src\utils\httpError.js') (Join-Path $frontend 'src\utils') -Force
 New-Item -ItemType Directory (Join-Path $frontend 'src\assets\branding') -Force | Out-Null
 Copy-Item (Join-Path $repoRoot 'frontend\src\assets\branding\*.svg') (Join-Path $frontend 'src\assets\branding') -Force
 Copy-Item (Join-Path $repoRoot 'apps\photos\*.go'),(Join-Path $repoRoot 'apps\photos\go.mod') $app -Force
@@ -30,7 +33,7 @@ $priorCgo=$env:CGO_ENABLED
 try{
  $env:CGO_ENABLED='0'
  Push-Location $app
- try{Invoke-Checked $GoExecutable @('build','-trimpath','-ldflags','-s -w -H windowsgui -X main.version=photos-preview','-o',(Join-Path $OutputDirectory 'Photos.exe'),'.')}finally{Pop-Location}
+ try{Invoke-Checked $GoExecutable @('build','-trimpath','-ldflags',"-s -w -H windowsgui -X main.version=$Version",'-o',(Join-Path $OutputDirectory 'Photos.exe'),'.')}finally{Pop-Location}
 }finally{$env:CGO_ENABLED=$priorCgo}
 [IO.File]::WriteAllText((Join-Path $OutputDirectory 'Photos.json'), (@{server=$ServerUrl;listen='127.0.0.1:8860'} | ConvertTo-Json))
 Copy-Item (Join-Path $repoRoot 'LICENSE') (Join-Path $OutputDirectory 'LICENSE-FileBrowser.txt') -Force

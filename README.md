@@ -35,7 +35,7 @@ Download a preview from this fork's [releases](https://github.com/fahimc/filebro
 
 FileBrowser can use its normal authentication independently of MyAccounts. To connect shared sign-in, follow [MYACCOUNTS.md](MYACCOUNTS.md). Keep the OIDC client secret in a protected launcher environment.
 
-**Release coverage:** the published `drive-office-v0.4.0` package includes Office/version history. Newer Photos, Studio and branding source may require a local build or a later package; check each release's notes before installing.
+**Release coverage:** the [v0.5.0 preview](https://github.com/fahimc/filebrowser/releases/tag/drive-v0.5.0-preview.1) packages the shared Drive design, Office/version history, Photos and Image Studio, with improved upload confirmation and recovery. Check the release notes for package contents and current limits.
 
 ## Office and Photos previews
 

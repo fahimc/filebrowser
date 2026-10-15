@@ -26,7 +26,7 @@ Password sign-in works through the authenticated upstream APIs. For MyAccounts, 
 
 Older Quantum installations can use the companion through the existing folder, preview, view-grant, upload and pinned-item APIs. The compatibility mode scans folders incrementally; newer installations use the efficient paginated photo index. Update the core executable to add the built-in sidebar section and the new API. Very large older libraries benefit from upgrading the core. Supported image/video decoding follows the browser and FileBrowser's available thumbnail generators; formats such as HEIC and some video codecs may require another viewer. Preview failures retain an Open in FileBrowser action. Original files are never converted or replaced by the gallery.
 
-Uploads use FileBrowser's normal chunked upload endpoint. Duplicate filenames produce a conflict rather than overwriting existing files. Create permissions and quotas still apply.
+Uploads use FileBrowser's normal chunked upload endpoint. Duplicate filenames receive a numbered suffix, preserving existing files. Create permissions and quotas still apply; see [upload recovery and naming](#interrupted-uploads).
 
 ## Build Photos.exe
 
@@ -59,3 +59,22 @@ All endpoints use FileBrowser's existing authenticated session or supported API 
 | `POST /api/resources?source=…&path=…` | Existing quota-aware chunked file upload; `X-File-Chunk-Offset`, `X-File-Total-Size`, `X-File-Upload-Session`; response `{offset,total,complete}` |
 
 Media IDs derive from source and scope-relative path; a rename changes the ID. Cursors are opaque, authenticated, bound to the user/source/folder/filter, and ephemeral across a server restart. On an expired-cursor response, reload the first page. Paging uses modified time and path as a stable tie-breaker; concurrent filesystem edits can move items between pages, so clients deduplicate by ID and expose Refresh. Indexed media can take a normal source scan to appear after external Windows changes. History/cache directories and denied/hidden files remain excluded. Photo bytes are never inserted into a proprietary media database.
+
+## Interrupted uploads
+
+Gateway failures are shown as short messages with a recovery action, rather than
+raw HTML. Photos shows byte-upload progress, then waits for the server to confirm
+the save. Keep the Photos page open after a failure and choose **Retry remaining
+uploads**. The selected files, upload session and last confirmed chunk offset
+are retained in memory; already confirmed files are omitted from the retry.
+Refreshing the library also shows files completed before the interruption.
+
+Duplicate names are handled automatically: `photo.png`, `photo (1).png`,
+`photo (2).png`, and so on. Photos checks names before sending bytes and also
+handles a conflict if another upload claims the name meanwhile. The extension
+is retained and existing files are never overwritten automatically.
+
+If the final response was lost but the file was saved, retrying that unconfirmed
+file can create a numbered copy. Refresh the library first if you want to avoid
+that copy. Closing/reloading the page discards its in-memory file selection;
+select the remaining files again after signing in if necessary.

@@ -16,7 +16,9 @@
    <div class="ph-content">
     <div class="ph-heading"><div><h1>{{mode==='folders'?'Albums':mode==='favorites'?'Favourites':'Photos'}}</h1><p>{{folder==='/'?source:folder}} <span v-if="mode!=='folders'">· By file date</span></p></div><button class="ph-primary" :disabled="!source||uploading||busy" @click="$refs.fileInput.click()"><PhotosIcon name="upload"/>Upload</button><input ref="fileInput" type="file" multiple accept="image/*,video/*,.heic,.heif" hidden @change="upload($event.target.files)"/></div>
     <div v-if="mode!=='folders'" class="ph-filters"><button v-for="filter in filters" :key="filter.id" :class="{'ph-selected':kind===filter.id}" @click="kind=filter.id;refresh()">{{filter.label}}</button><button v-if="folder!=='/'" @click="folder='/';refresh()">All folders</button><span v-if="items.length">{{items.length}} loaded</span></div>
-    <p v-if="error" class="ph-error" role="alert">{{error}} <button @click="refresh">Retry</button></p>
+    <p v-if="error" class="ph-error" role="alert">{{error}} <button @click="refresh">Refresh library</button></p>
+    <div v-if="uploadFailure&&!uploading" class="ph-error ph-upload-recovery" role="alert"><strong>Upload paused · {{uploadFailure.files.length}} remaining</strong><p>{{uploadFailure.message}}</p><p>Destination: {{uploadFailure.source}}{{uploadFailure.folder}}. Keep this page open to retry. Completed files will not be uploaded again.</p><button class="ph-primary" @click="retryUploads">Retry remaining uploads</button><button @click="refresh">Refresh library</button><button v-if="uploadFailure.status===409" @click="skipFailedUpload">Skip this file and continue</button><button @click="uploadFailure=null">Dismiss</button></div>
+    <p v-if="uploadNotice&&!uploading" class="ph-upload-status" role="status">{{uploadNotice}}</p>
     <div v-if="uploading" class="ph-upload-status" role="status"><PhotosIcon name="upload"/><span>{{uploadStatus}}</span><progress :value="uploadPercent" max="100"/></div>
     <div v-if="mode==='folders'" class="ph-albums"><button class="ph-album" @click="mode='photos';folder='/';refresh()"><PhotosIcon name="photo"/><strong>All photos</strong><span>{{source}}</span></button><button v-for="album in albums" :key="album.path" class="ph-album" @click="mode='photos';folder=album.path;refresh()"><PhotosIcon name="folder"/><strong>{{album.name}}</strong><span>Folder album</span></button><button v-if="folder!=='/'" class="ph-album" @click="folder=parent(folder);refresh()"><PhotosIcon name="left"/><strong>Parent folder</strong></button></div>
     <div v-else>
@@ -41,6 +43,8 @@ import PhotosIcon from './PhotosIcon.vue';
 const props=defineProps({api:{type:Object,required:true},standalone:{type:Boolean,default:false}});
 const emit=defineEmits(['unauthorized']);
 const source=ref(''),sources=ref([]),user=ref(null),folder=ref('/'),mode=ref('photos'),kind=ref(''),query=ref(''),items=ref([]),albums=ref([]),next=ref(''),busy=ref(false),error=ref(''),failedImages=ref(new Set()),accountOpen=ref(false),uploading=ref(false),uploadStatus=ref(''),uploadPercent=ref(0),fileInput=ref(null);
+const uploadFailure=ref(null);
+const uploadNotice=ref('');
 const selected=ref(null),mediaURL=ref(''),viewerError=ref(''),details=ref(false),viewer=ref(null);let generation=0,selection=0,destroyed=false,opener=null;
 const tabs=[{id:'photos',icon:'photo',label:'Photos'},{id:'favorites',icon:'star',label:'Favourites'},{id:'folders',icon:'folder',label:'Albums'}];
 const filters=[{id:'',label:'All'},{id:'image',label:'Photos'},{id:'video',label:'Videos'}];
@@ -58,7 +62,25 @@ function close(){selection++;selected.value=null;mediaURL.value='';document.remo
 function trap(event){if(event.key!=='Tab'||!viewer.value)return;const controls=[...viewer.value.querySelectorAll('button:not([disabled]),a[href],video')];if(!controls.length)return;const first=controls[0],last=controls.at(-1);if(event.shiftKey&&(document.activeElement===first||document.activeElement===viewer.value)){event.preventDefault();last.focus();}else if(!event.shiftKey&&(document.activeElement===last||document.activeElement===viewer.value)){event.preventDefault();first.focus();}}
 function step(amount){const item=items.value[selectedIndex.value+amount];if(item)void open(item);}
 async function favorite(item){try{await props.api.favorite(item,!item.favorite);if(mode.value==='favorites'&&!item.favorite)items.value=items.value.filter(x=>x.id!==item.id);}catch(e){error.value=e.message;}}
-async function upload(files){if(!files?.length||uploading.value)return;const media=[...files].filter(x=>/^image\/|^video\//.test(x.type)||/\.(heic|heif)$/i.test(x.name));if(!media.length){error.value='Choose photo or video files.';return;}uploading.value=true;error.value='';try{await props.api.upload(source.value,folder.value,media,p=>{uploadStatus.value=`${p.name} · ${p.completed}/${p.total} complete`;uploadPercent.value=p.percent;});await refresh();}catch(e){error.value=e.status===409?'A file with that name already exists. Rename the file before uploading.':e.message;}finally{uploading.value=false;if(fileInput.value)fileInput.value.value='';}}
+async function upload(files,destination=null){
+ if(!files?.length||uploading.value)return;
+ if(uploadFailure.value&&!destination){error.value='Retry or dismiss the paused upload before choosing more files.';return;}
+ const media=[...files].filter(x=>/^image\/|^video\//.test(x.type)||/\.(heic|heif)$/i.test(x.name));
+ if(!media.length){error.value='Choose photo or video files.';return;}
+ const target=destination||{source:source.value,folder:folder.value};
+ uploading.value=true;error.value='';uploadNotice.value='';uploadStatus.value='Preparing upload…';uploadPercent.value=0;
+ try{
+  const saved=await props.api.upload(target.source,target.folder,media,p=>{uploadStatus.value=`${p.name} · ${p.completed}/${p.total} saved${p.phase==='saving'?' · Saving…':p.phase==='renaming'?' · Choosing an available name…':''}`;uploadPercent.value=p.percent;});
+  const renamed=(saved||[]).filter(file=>file.renamed).length;
+  uploadNotice.value=`${media.length} uploaded${renamed?` · ${renamed} duplicate${renamed===1?'':'s'} saved with a numbered name`:''}.`;
+  uploadFailure.value=null;await refresh();
+ }catch(e){
+  uploadFailure.value={...target,files:e.remainingFiles||media,message:e.message,status:e.status};
+  await refresh();
+ }finally{uploading.value=false;if(fileInput.value)fileInput.value.value='';}
+}
+function retryUploads(){const failed=uploadFailure.value;if(failed)void upload(failed.files,failed);}
+function skipFailedUpload(){const failed=uploadFailure.value;if(!failed)return;const remaining=failed.files.slice(1);if(!remaining.length){uploadFailure.value=null;return;}void upload(remaining,failed);}
 function drop(event){if(source.value)void upload(event.dataTransfer.files);}
 onMounted(async()=>{try{user.value=await props.api.profile();sources.value=await props.api.sources();source.value=sources.value[0]||'';await refresh();}catch(e){error.value=e.message;if(e.status===401)emit('unauthorized');}});
 onBeforeUnmount(()=>{destroyed=true;generation++;selection++;document.removeEventListener('keydown',trap);});
@@ -69,3 +91,4 @@ onBeforeUnmount(()=>{destroyed=true;generation++;selection++;document.removeEven
 @media(max-width:600px){.ph-app{border-radius:0}.ph-brand span{display:none}.ph-brand{min-width:0}.ph-search{height:44px;padding:0 12px;gap:8px}.ph-topbar{gap:8px;padding:12px}.ph-icon-button{display:none}.ph-body{flex-direction:column}.ph-navigation{width:auto;padding:8px 12px;display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--ph-line)}.ph-navigation>button{width:auto;flex:1;justify-content:center;font-size:13px;gap:6px;padding:12px 8px}.ph-navigation>button svg{width:20px;height:20px}.ph-library-choice{width:100%;padding:5px 0}.ph-library-choice label,.ph-storage-note{display:none}.ph-library-choice select{font-size:13px;border:0}.ph-content{padding:20px 10px 45px}.ph-heading h1{font-size:24px}.ph-heading .ph-primary{font-size:13px;padding:10px 14px!important}.ph-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}.ph-tile{aspect-ratio:1}.ph-filters{gap:6px}.ph-filters button{padding:8px 14px}.ph-filters>span{display:none}.ph-tile-star{padding:3px!important;right:3px;top:3px}.ph-tile-star svg{width:18px;height:18px}.ph-media{padding:70px 40px 24px}.ph-viewer-bar{gap:4px}.ph-viewer-bar strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ph-details{position:absolute;bottom:0;left:0;right:0;width:auto;height:45%;background:#202124;border:0;padding:20px;z-index:3}.ph-viewer:has(.ph-details) .ph-next{right:12px}.ph-upload-status{flex-wrap:wrap}.ph-upload-status progress{width:100%}}
 @media(prefers-reduced-motion:reduce){.ph-image img{transition:none}}
 </style>
+<style scoped>.ph-upload-recovery{margin-bottom:20px}.ph-upload-recovery strong{display:block;margin-bottom:8px}.ph-upload-recovery p{font-size:14px;line-height:1.5}.ph-upload-recovery button{margin:6px 8px 0 0}</style>

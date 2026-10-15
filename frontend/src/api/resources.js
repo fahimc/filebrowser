@@ -14,6 +14,7 @@ import { isMediaFile } from "@/utils/mediaFile.js"
 import { getObjectProperty } from "@/utils/object.js"
 import { getStreamURL, getStreamURLPublic } from "./media.js"
 import { invalidateDirMetadataCache } from '@/utils/metadataCache.js'
+import { httpErrorMessage } from '@/utils/httpError.js'
 
 export { fetchPreviewImage } from "@/utils/previewRequests.js"
 
@@ -187,20 +188,20 @@ export async function getItems(source, path, only = "") {
  * Registers a graceful pause for the active chunked upload at this path.
  * Call immediately before aborting the chunk XHR so the server keeps partial data.
  */
-export async function signalUploadPause(source, path, shareHash) {
+export async function signalUploadPause(source, path, shareHash, signal) {
   if (shareHash) {
     const apiPath = getPublicApiPath('resources/pause', {
       hash: shareHash,
       path: path,
     })
-    await fetchURL(apiPath, { method: 'POST', headers: sharePublicAuthHeaders(shareHash) })
+    await fetchURL(apiPath, { method: 'POST', headers: sharePublicAuthHeaders(shareHash), signal })
     return
   }
   if (!source || source === undefined || source === null) {
     throw new Error('no source provided')
   }
   const apiPath = getApiPath('resources/pause', { path, source })
-  await fetchURL(apiPath, { method: 'POST' })
+  await fetchURL(apiPath, { method: 'POST', signal })
 }
 
 async function resourceAction(source, path, method, content) {
@@ -834,11 +835,12 @@ export function post(
           request.upload.onprogress = (event) => {
             if (event.lengthComputable) {
               const percentComplete = Math.round(
-                (event.loaded / event.total) * 100
+                Math.min(99, (event.loaded / event.total) * 100)
               );
               onupload(percentComplete);
             }
           };
+          request.upload.onload = () => onupload(100, true);
         }
 
         request.onload = () => {
@@ -861,13 +863,7 @@ export function post(
                 if (rejectIfAborted(reject)) {
                   return;
                 }
-                let errorMessage = "Upload failed";
-                try {
-                  const errorData = JSON.parse(request.responseText);
-                  errorMessage = errorData.message || errorMessage;
-                } catch (_e) {
-                  errorMessage = request.responseText || errorMessage;
-                }
+                const errorMessage = httpErrorMessage(request.status, request.responseText, request.getResponseHeader("Content-Type") || "");
                 const error = new Error(errorMessage);
                 error.status = request.status;
                 error.response = { status: request.status, responseText: request.responseText };
@@ -888,13 +884,7 @@ export function post(
             })();
             return;
           }
-          let errorMessage = "Upload failed";
-          try {
-            const errorData = JSON.parse(request.responseText);
-            errorMessage = errorData.message || errorMessage;
-          } catch (_e) {
-            errorMessage = request.responseText || errorMessage;
-          }
+          const errorMessage = httpErrorMessage(request.status, request.responseText, request.getResponseHeader("Content-Type") || "");
           const error = new Error(errorMessage);
           error.status = request.status;
           error.response = { status: request.status, responseText: request.responseText };
@@ -1358,11 +1348,12 @@ export function postPublic(
       request.upload.onprogress = (event) => {
         if (event.lengthComputable) {
           const percentComplete = Math.round(
-            (event.loaded / event.total) * 100
+            Math.min(99, (event.loaded / event.total) * 100)
           );
           onupload(percentComplete);
         }
       };
+      request.upload.onload = () => onupload(100, true);
     }
 
     const promise = new Promise((resolve, reject) => {
@@ -1374,13 +1365,7 @@ export function postPublic(
           error.response = { status: request.status, responseText: request.responseText };
           reject(error);
         } else {
-          let errorMessage = "Upload failed";
-          try {
-            const errorData = JSON.parse(request.responseText);
-            errorMessage = errorData.message || errorMessage;
-          } catch (_e) {
-            errorMessage = request.responseText || errorMessage;
-          }
+          const errorMessage = httpErrorMessage(request.status, request.responseText, request.getResponseHeader("Content-Type") || "");
 
           const error = new Error(errorMessage);
           error.status = request.status;

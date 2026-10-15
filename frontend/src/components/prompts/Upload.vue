@@ -74,8 +74,12 @@
                     : (file.progress / 100) * file.size
               " :unit="file.status === 'completed' || file.status === 'error' ? '' : 'bytes'" :max="file.size"
               :status="file.status" text-position="inside" size="20"
+              :val-text="file.waitingForServer && file.status === 'uploading' ? 'Waiting for server confirmation…' : null"
               :help-text="getHelpText(file)">
             </progress-bar>
+            <div v-if="file.type !== 'directory' && file.status !== 'completed'" class="status-label" role="status">
+              {{ getHelpText(file) || getStatusText(file.status, file) }}
+            </div>
             <div v-else class="status-label">
               <span>{{ getStatusText(file.status, file) }}</span>
             </div>
@@ -86,8 +90,9 @@
               type="button"
               @click="uploadManager.pause(file.id)"
               class="action"
+              :disabled="file.waitingForServer || file.pauseRequested"
               :aria-label="$t('general.pause')"
-              :title="$t('general.pause')"
+              :title="file.waitingForServer ? 'Waiting for the server to finish saving' : $t('general.pause')"
             >
               <i class="material-symbols">pause</i>
             </button>
@@ -395,7 +400,7 @@ export default {
     });
 
     const canPauseAll = computed(() =>
-      files.value.some((file) => file.status === "uploading")
+      files.value.some((file) => file.status === "uploading" && !file.waitingForServer && !file.pauseRequested)
     );
 
     const canResumeAll = computed(
@@ -457,7 +462,7 @@ export default {
     };
 
     onMounted(async () => {
-      document.addEventListener("visibilitychange", void handleVisibilityChange);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
       window.addEventListener("beforeunload", handleBeforeUnload);
       uploadManager.setOnConflict(handleConflict);
       if (props.initialItems) {
@@ -466,7 +471,7 @@ export default {
     });
 
     onUnmounted(() => {
-      document.removeEventListener("visibilitychange", void handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("beforeunload", handleBeforeUnload);
       uploadManager.setOnConflict(() => {}); // cleanup
       releaseWakeLock();
@@ -625,12 +630,18 @@ export default {
     };
 
     const getStatusText = (status, file) => {
+      if (status === 'uploading' && file?.pauseRequested) return 'Pausing…';
+      if (status === 'uploading' && file?.waitingForServer) {
+        return 'Bytes sent. Waiting for the server to confirm saving.';
+      }
       // Show connection issue in status for paused uploads
       if (status === 'paused' && file?.connectionIssue) {
         return 'Paused (connection issue)';
       }
 
       switch (status) {
+        case 'pending':
+          return 'Waiting to upload';
         case 'uploading':
           return i18n.global.t('general.uploading', { suffix: '...' });
         case 'completed':
@@ -651,11 +662,11 @@ export default {
     };
 
     const getHelpText = (file) => {
-      if (file.status === 'error' && file.errorDetails) {
+      if (['error', 'paused'].includes(file.status) && file.errorDetails) {
         return file.errorDetails;
       }
       if (file.status === 'paused' && file.connectionIssue) {
-        return 'Connection stalled - upload paused. Click resume to retry.';
+        return 'Connection interrupted. Check your connection, then Resume to continue.';
       }
       if (file.connectionIssue && file.status === 'error') {
         return file.errorDetails || 'Connection issue detected. Click retry to resume.';
@@ -767,9 +778,15 @@ export default {
 }
 
 .status-label {
-  color: #777;
+  color: var(--textSecondary, #777);
   font-size: 0.8em;
   margin-top: 5px;
+  overflow-wrap: anywhere;
+}
+
+.file-actions .action:disabled {
+  opacity: 0.4;
+  cursor: wait;
 }
 
 .file-actions .action {
