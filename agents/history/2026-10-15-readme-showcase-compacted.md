@@ -33,7 +33,9 @@ The user subsequently requested merging drive-reskin into master. This supersede
 the earlier default-branch restriction above. No master existed on the fork;
 created it from fork/main (91bc608f) and fast-forwarded drive-reskin (620fe412).
 All custom app and README commits are retained, with no source-tree merge edits.
-README now identifies master as the canonical branch. Publish master to the
-user-owned fork and set it as GitHub's default; preserve main and drive-reskin.
-Keep GitHub Actions disabled and preserve the two untracked preview artifacts.
-No executable rebuild or runtime tests are needed for this branch promotion.
+README now identifies master as the canonical branch. Published master to the
+user-owned fork and verified it is GitHub's default. Main and drive-reskin remain
+intact. Verified drive-reskin is an ancestor of master, with only README/history
+differences. GitHub Actions remains disabled. The two untracked preview artifacts
+are preserved. No executable rebuild or runtime tests were performed for this
+branch promotion. Workspace has unrelated active edits and was left untouched.
