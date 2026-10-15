@@ -1,34 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="My Drive logo">
-  <title>My Drive logo</title>
-  <defs>
-    <linearGradient id="edge" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#11CAFF"/>
-      <stop offset="1" stop-color="#1678FF"/>
-    </linearGradient>
-    <linearGradient id="letters" x1="125" y1="144" x2="384" y2="350" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#4CDDFF"/>
-      <stop offset="1" stop-color="#1978F9"/>
-    </linearGradient>
-    <linearGradient id="panel" x1="70" y1="20" x2="445" y2="496" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#041827"/>
-      <stop offset="1" stop-color="#050A19"/>
-    </linearGradient>
-    <radialGradient id="haze" cx="0" cy="0" r="1" gradientTransform="translate(250 103) rotate(90) scale(370)" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#11CAFF" stop-opacity="0.18"/>
-      <stop offset="1" stop-color="#11CAFF" stop-opacity="0"/>
-    </radialGradient>
-    <clipPath id="rounded"><rect width="512" height="512" rx="76"/></clipPath>
-  </defs>
-  <!-- Canvas outside the rounded square remains fully transparent. -->
-  <g clip-path="url(#rounded)">
-    <rect width="512" height="512" fill="url(#panel)"/>
-    <rect width="512" height="512" fill="url(#haze)"/>
-    <rect x="7" y="7" width="498" height="498" rx="70" stroke="url(#edge)" stroke-width="12" fill="none"/>
-    <rect x="24" y="24" width="464" height="464" rx="55" stroke="#FFFFFF" stroke-opacity="0.05" stroke-width="2" fill="none"/>
-    <g fill="url(#letters)">
-      <path d="M1307 0V854Q1307 883 1307.5 912.0Q1308 941 1317 1161Q1246 892 1212 786L958 0H748L494 786L387 1161Q399 929 399 854V0H137V1409H532L784 621L806 545L854 356L917 582L1176 1409H1569V0Z" transform="translate(63.158 343) scale(0.121094 -0.121094)"/>
-<path d="M1393 715Q1393 497 1307.5 334.5Q1222 172 1065.5 86.0Q909 0 707 0H137V1409H647Q1003 1409 1198.0 1229.5Q1393 1050 1393 715ZM1096 715Q1096 942 978.0 1061.5Q860 1181 641 1181H432V228H682Q872 228 984.0 359.0Q1096 490 1096 715Z" transform="translate(269.744 343) scale(0.121094 -0.121094)"/>
-    </g>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none" role="img" aria-labelledby="drive-title">
+<title id="drive-title">Drive</title>
+<defs>
+<linearGradient id="drive-back-cloud" x1="115" y1="49" x2="189" y2="162" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#687AFF"/><stop offset="0.47" stop-color="#404CDD"/><stop offset="1" stop-color="#242074"/></linearGradient>
+<linearGradient id="drive-left-cloud" x1="45" y1="112" x2="102" y2="210" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4C52D7"/><stop offset="0.54" stop-color="#302A98"/><stop offset="1" stop-color="#211A69"/></linearGradient>
+<linearGradient id="drive-front-cloud" x1="117" y1="96" x2="222" y2="211" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#A1F4DF"/><stop offset="0.44" stop-color="#57D8BD"/><stop offset="1" stop-color="#08AB95"/></linearGradient>
+</defs>
+<path d="M67 125C67 82 98 50 138 50C178 50 209 78 211 113L186 169 92 191Z" fill="url(#drive-back-cloud)"/>
+<path d="M109 131C93 106 65 100 42 114C20 127 10 151 17 173C21 188 32 200 50 205L122 207 153 153Z" fill="url(#drive-left-cloud)"/>
+<path d="M49 205 111 123C131 97 160 88 187 97C219 108 240 131 240 160C240 187 219 209 191 209H75C65 209 56 208 49 205Z" fill="url(#drive-front-cloud)"/>
+<path d="M83 84C97 63 116 51 139 51C164 51 184 62 197 80" fill="none" stroke="#B3C2FF" stroke-opacity="0.22" stroke-width="1.1" stroke-linecap="round"/>
 </svg>

@@ -1,34 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Photo Editor logo">
-  <title>Photo Editor logo</title>
-  <defs>
-    <linearGradient id="edge" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FF64B2"/>
-      <stop offset="1" stop-color="#F51E8A"/>
-    </linearGradient>
-    <linearGradient id="letters" x1="125" y1="144" x2="384" y2="350" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FF8BCB"/>
-      <stop offset="1" stop-color="#FB348B"/>
-    </linearGradient>
-    <linearGradient id="panel" x1="70" y1="20" x2="445" y2="496" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#240719"/>
-      <stop offset="1" stop-color="#050A19"/>
-    </linearGradient>
-    <radialGradient id="haze" cx="0" cy="0" r="1" gradientTransform="translate(250 103) rotate(90) scale(370)" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FF64B2" stop-opacity="0.18"/>
-      <stop offset="1" stop-color="#FF64B2" stop-opacity="0"/>
-    </radialGradient>
-    <clipPath id="rounded"><rect width="512" height="512" rx="76"/></clipPath>
-  </defs>
-  <!-- Canvas outside the rounded square remains fully transparent. -->
-  <g clip-path="url(#rounded)">
-    <rect width="512" height="512" fill="url(#panel)"/>
-    <rect width="512" height="512" fill="url(#haze)"/>
-    <rect x="7" y="7" width="498" height="498" rx="70" stroke="url(#edge)" stroke-width="12" fill="none"/>
-    <rect x="24" y="24" width="464" height="464" rx="55" stroke="#FFFFFF" stroke-opacity="0.05" stroke-width="2" fill="none"/>
-    <g fill="url(#letters)">
-      <path d="M1296 963Q1296 827 1234.0 720.0Q1172 613 1056.5 554.5Q941 496 782 496H432V0H137V1409H770Q1023 1409 1159.5 1292.5Q1296 1176 1296 963ZM999 958Q999 1180 737 1180H432V723H745Q867 723 933.0 783.5Q999 844 999 958Z" transform="translate(90.586 343) scale(0.121094 -0.121094)"/>
-<path d="M137 0V1409H1245V1181H432V827H1184V599H432V228H1286V0Z" transform="translate(256.000 343) scale(0.121094 -0.121094)"/>
-    </g>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none" role="img" aria-labelledby="photo-editor-title">
+<title id="photo-editor-title">Photo Editor</title>
+<defs>
+<linearGradient id="photo-editor-navy" x1="17" y1="25" x2="210" y2="214" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4B4DD8"/><stop offset="0.48" stop-color="#302B99"/><stop offset="1" stop-color="#1C165E"/></linearGradient>
+<linearGradient id="photo-editor-blue-mountain" x1="129" y1="88" x2="151" y2="219" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7589FF"/><stop offset="0.5" stop-color="#4E68FA"/><stop offset="1" stop-color="#2B35CA"/></linearGradient>
+<linearGradient id="photo-editor-moon" x1="56" y1="54" x2="91" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.47" stop-color="#E8EDF5"/><stop offset="1" stop-color="#AAB5C9"/></linearGradient>
+<linearGradient id="photo-editor-grey-mountain" x1="55" y1="132" x2="82" y2="213" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#F2F5FC"/><stop offset="0.48" stop-color="#CAD2E1"/><stop offset="1" stop-color="#9CA8BF"/></linearGradient>
+<linearGradient id="photo-editor-brush-handle" x1="218" y1="106" x2="193" y2="182" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#535BE5"/><stop offset="0.45" stop-color="#332EAD"/><stop offset="1" stop-color="#1E176B"/></linearGradient>
+<linearGradient id="photo-editor-ferrule" x1="173" y1="164" x2="185" y2="201" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.47" stop-color="#E8EDF5"/><stop offset="1" stop-color="#AAB5C9"/></linearGradient>
+<linearGradient id="photo-editor-bristles" x1="144" y1="187" x2="178" y2="226" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#8AEFD9"/><stop offset="0.42" stop-color="#49D4BA"/><stop offset="1" stop-color="#00A58F"/></linearGradient>
+<clipPath id="photo-editor-photo-clip"><path d="M45 25H181C197 25 210 38 210 54V108L150 172C136 174 128 180 126 191L124 205C124 211 120 214 114 214H45C29 214 16 201 16 185V54C16 38 29 25 45 25Z"/></clipPath>
+</defs>
+<path d="M45 25H181C197 25 210 38 210 54V108L150 172C136 174 128 180 126 191L124 205C124 211 120 214 114 214H45C29 214 16 201 16 185V54C16 38 29 25 45 25Z" fill="url(#photo-editor-navy)"/>
+<g clip-path="url(#photo-editor-photo-clip)">
+<circle cx="70" cy="77" r="24" fill="url(#photo-editor-moon)"/>
+<path d="M57 179 136 94C143 87 152 86 160 94L219 153V221H57Z" fill="url(#photo-editor-blue-mountain)"/>
+<path d="M1 178 45 137C51 131 58 131 64 137L124 195V221H1Z" fill="url(#photo-editor-grey-mountain)"/>
+</g>
+<path d="M221 110C227 103 237 105 241 112C247 118 243 125 238 131L190 183 182 201C182 212 171 228 155 232C148 235 136 235 131 232C128 230 128 228 131 225C138 219 137 208 141 198C145 188 153 185 160 183L169 164Z" fill="#F5F8FC" stroke="#F5F8FC" stroke-width="8" stroke-linejoin="round"/>
+<path d="M221 110C227 103 237 105 241 112C247 118 243 125 238 131L190 183 169 164Z" fill="url(#photo-editor-brush-handle)"/>
+<path d="M169 164 190 183 182 201 160 183Z" fill="url(#photo-editor-ferrule)"/>
+<path d="M160 183 182 201C182 212 171 228 155 232C148 235 136 235 131 232C128 230 128 228 131 225C138 219 137 208 141 198C145 188 153 185 160 183Z" fill="url(#photo-editor-bristles)"/>
+<path d="M160 183C148 194 153 210 138 224C143 224 154 218 160 206C164 198 164 192 171 193Z" fill="#98F0D9" fill-opacity="0.22"/>
 </svg>

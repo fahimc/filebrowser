@@ -133,7 +133,7 @@ export default {
     },
     editorUrl() {
       const params = new URLSearchParams({ embed: "1", embedOrigin: window.location.origin });
-      if (this.isNewDocument && this.newType !== 'pdf') params.set("new", this.newType.toLowerCase());
+      if (this.isNewDocument && !['pdf','pptx','docx'].includes(this.newType)) params.set("new", this.newType.toLowerCase());
       return `${globalVars.baseURL || "/"}editor?${params.toString()}`;
     },
     isShare() {
@@ -160,6 +160,7 @@ export default {
     if (this.isNewDocument) {
       this.statusText = "New document";
       if (this.newType === 'pdf') this.documentBuffer = createBlankPDF();
+      else if (['pptx','docx'].includes(this.newType)) this.loadNewTemplate().catch(error => this.showError(error));
       return;
     }
     this.openExistingFile().catch((error) => this.showError(error));
@@ -174,6 +175,13 @@ export default {
     void this.collaboration?.stop();
   },
   methods: {
+    async loadNewTemplate() {
+      const response = await fetch(`${globalVars.baseURL || '/'}public/static/templates/blank-en.${this.newType}`);
+      if (!response.ok) throw new Error('Could not load the new document template. Please retry.');
+      this.documentBuffer = await response.arrayBuffer();
+      if (this.destroyed) return;
+      if (this.bridgeReady) this.openEditorBuffer();
+    },
     editorOrigin() {
       return window.location.origin;
     },

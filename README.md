@@ -1,8 +1,8 @@
 # <img src="frontend/src/assets/branding/my_drive.svg" alt="" width="40" height="40"> My Drive
 
-A self-hosted file manager with a Drive-style interface, browser Office editing, photo browsing and an optional image editor. Built on FileBrowser Quantum and connected to [One Workspace](https://github.com/fahimc/one-workspace) through MyAccounts.
+A self-hosted file manager with a Drive-style interface, browser Office editing, photo browsing and an optional image editor. Built on FileBrowser Quantum and connected to [One Workspace](https://github.com/oneworkspacestudio/one-workspace) through MyAccounts.
 
-[Download Windows previews](https://github.com/fahimc/filebrowser/releases) · [MyAccounts setup](MYACCOUNTS.md) · [Office](OFFICE.md) · [Photos](PHOTOS.md) · [Suite installer](https://github.com/fahimc/one-workspace)
+[Download Windows previews](https://github.com/oneworkspacestudio/drive/releases) · [MyAccounts setup](MYACCOUNTS.md) · [Office](OFFICE.md) · [Photos](PHOTOS.md) · [Suite installer](https://github.com/oneworkspacestudio/one-workspace)
 
 ![Current My Drive interface with shared controls and compact sidebar selection](docs/images/drive-current.png)
 
@@ -15,7 +15,7 @@ A self-hosted file manager with a Drive-style interface, browser Office editing,
 | <img src="frontend/src/assets/branding/my_drive.svg" alt="" width="28" height="28"> **Drive** | Browse sources, upload, search and share. [FileBrowser documentation](https://filebrowserquantum.com/). |
 | <img src="frontend/src/assets/branding/my_office.svg" alt="" width="28" height="28"> **Office** | Edit documents, sheets, slides and PDFs with autosave and history. [Office guide](OFFICE.md). |
 | <img src="frontend/src/assets/branding/my_photos.svg" alt="" width="28" height="28"> **Photos** | Explore a thumbnail timeline, folder albums and favourites. [Photos guide](PHOTOS.md). |
-| <img src="frontend/src/assets/branding/photo_editor.svg" alt="" width="28" height="28"> **Photo&nbsp;Editor** | Open images in Studio and save through Drive's permissions. [Studio app and adapter](https://github.com/fahimc/miniPaint/blob/master/STUDIO.md). |
+| <img src="frontend/src/assets/branding/photo_editor.svg" alt="" width="28" height="28"> **Photo&nbsp;Editor** | Open images in Studio and save through Drive's permissions. [Studio app and adapter](https://github.com/oneworkspacestudio/Photo-Editor/blob/master/STUDIO.md). |
 
 All file access uses FileBrowser's source configuration and permissions. Office documents and photos stay in their existing folders; browsing them does not import them into a second storage service.
 
@@ -23,11 +23,11 @@ All file access uses FileBrowser's source configuration and permissions. Office 
 
 ### With One Workspace
 
-Use the [One Workspace installer](https://github.com/fahimc/one-workspace). Its wizard configures the included components and shared MyAccounts login. Apps open from the portal and can use the same HTTPS tunnel.
+Use the [One Workspace installer](https://github.com/oneworkspacestudio/one-workspace). Its wizard configures the included components and shared MyAccounts login. Apps open from the portal and can use the same HTTPS tunnel.
 
 ### Standalone Drive
 
-Download a preview from this fork's [releases](https://github.com/fahimc/filebrowser/releases), configure your file sources and authentication, then launch the executable with its configuration:
+Download a preview from this fork's [releases](https://github.com/oneworkspacestudio/drive/releases), configure your file sources and authentication, then launch the executable with its configuration:
 
 ```powershell
 .\FileBrowser.exe -c .\config.yaml
@@ -35,7 +35,7 @@ Download a preview from this fork's [releases](https://github.com/fahimc/filebro
 
 FileBrowser can use its normal authentication independently of MyAccounts. To connect shared sign-in, follow [MYACCOUNTS.md](MYACCOUNTS.md). Keep the OIDC client secret in a protected launcher environment.
 
-**Release coverage:** the [v0.5.0 preview](https://github.com/fahimc/filebrowser/releases/tag/drive-v0.5.0-preview.1) packages the shared Drive design, Office/version history, Photos and Image Studio, with improved upload confirmation and recovery. Check the release notes for package contents and current limits.
+**Release coverage:** the [v0.5.0 preview](https://github.com/oneworkspacestudio/drive/releases) packages the shared Drive design, Office/version history, Photos and Image Studio, with improved upload confirmation and recovery. Check the release notes for package contents and current limits.
 
 ## Office and Photos previews
 
@@ -66,13 +66,13 @@ The timeline uses file modification dates. Albums correspond to ordinary folders
 
 ## Build and integration
 
-The custom app is maintained on [`master`](https://github.com/fahimc/filebrowser/tree/master), the default branch of this fork.
+The custom app is maintained on [`master`](https://github.com/oneworkspacestudio/drive/tree/master), the default branch of this fork.
 
 Start with [contributing instructions](CONTRIBUTING.md). Additional build and integration guides:
 
 - [Office editor assets and backend integration](OFFICE.md)
 - [Portable Photos build](scripts/build-photos.ps1)
-- [Photo Editor source and FileBrowser adapter](https://github.com/fahimc/miniPaint)
+- [Photo Editor source and FileBrowser adapter](https://github.com/oneworkspacestudio/Photo-Editor)
 - [MyAccounts configuration](MYACCOUNTS.md)
 - [Shared Drive design system and component reference](docs/DESIGN-SYSTEM.md)
 

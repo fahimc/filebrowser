@@ -13,6 +13,7 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/gtsteffaniak/filebrowser/backend/internal/activity"
 	"github.com/gtsteffaniak/filebrowser/backend/internal/database/users"
+	"github.com/gtsteffaniak/filebrowser/backend/internal/state"
 	"github.com/gtsteffaniak/filebrowser/backend/internal/utils"
 	"github.com/gtsteffaniak/filebrowser/backend/pkg/settings"
 	"github.com/gtsteffaniak/go-logger/logger"
@@ -383,7 +384,11 @@ func oidcCallbackHandler(w http.ResponseWriter, r *http.Request, d *Context) (in
 
 	// Proceed to log the user in with the OIDC data
 	// userdata struct now contains info from either verified ID token or UserInfo endpoint
-	return loginWithOidcUser(w, r, loginUsername, userdata.Groups, postLoginRedirect)
+	displayName, _ := userdata.Claims["displayName"].(string)
+	if strings.TrimSpace(displayName) == "" {
+		displayName, _ = userdata.Claims["name"].(string)
+	}
+	return loginWithOidcUser(w, r, loginUsername, userdata.Groups, postLoginRedirect, displayName)
 }
 
 // mergeMissingOidcClaims copies claims from from into userdata when absent after UserInfo fallback.
@@ -401,7 +406,7 @@ func mergeMissingOidcClaims(userdata *userInfo, from map[string]any) {
 // loginWithOidcUser extracts the username from the user claims (userInfo)
 // based on the configured UserIdentifier and logs the user into the application.
 // It creates a new user if one doesn't exist.
-func loginWithOidcUser(w http.ResponseWriter, r *http.Request, username string, groups []string, postLoginRedirect string) (int, error) {
+func loginWithOidcUser(w http.ResponseWriter, r *http.Request, username string, groups []string, postLoginRedirect string, profile ...string) (int, error) {
 	oidcCfg := settings.Config.Auth.Methods.OidcAuth
 
 	// Check if user is in required groups (if userGroups is configured)
@@ -435,6 +440,12 @@ func loginWithOidcUser(w http.ResponseWriter, r *http.Request, username string, 
 		return http.StatusUnauthorized, err
 	}
 
+	if len(profile) > 0 && strings.TrimSpace(profile[0]) != "" && user.DisplayName != strings.TrimSpace(profile[0]) {
+		user.DisplayName = strings.TrimSpace(profile[0])
+		if err := state.UpdateUser(user, "", "displayName"); err != nil {
+			return http.StatusInternalServerError, fmt.Errorf("save display name: %w", err)
+		}
+	}
 	expires := time.Hour * time.Duration(settings.Config.Auth.TokenExpirationHours)
 	tokenString, err2 := mintAndRegisterSessionToken(user)
 	if err2 != nil {

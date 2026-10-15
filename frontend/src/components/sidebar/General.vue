@@ -16,7 +16,7 @@
           @click.prevent="navigateTo('/settings', '#profile-main')"
           @mouseenter="showTooltip($event, $t('index.settingsHover'))" @mouseleave="hideTooltip">
           <i class="material-symbols person-button__icon">person</i>
-          <span class="person-button__name">{{ user.username }}</span>
+          <span class="person-button__name">{{ user.displayName || user.username }}</span>
           <i aria-label="settings" class="material-symbols person-button__icon">settings</i>
         </a>
       </div>
@@ -29,7 +29,7 @@
       <div v-else-if="user.username !== 'anonymous'" class="inner-card user-card__profile">
         <button class="person-button action button" type="button">
           <i class="material-symbols person-button__icon">person</i>
-          <span class="person-button__name">{{ user.username }}</span>
+          <span class="person-button__name">{{ user.displayName || user.username }}</span>
         </button>
       </div>
 

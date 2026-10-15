@@ -32,7 +32,13 @@ func registerStudioRoutes(router *http.ServeMux, baseURL string) {
 		return
 	}
 	prefix := baseURL + "studio/editor/"
-	router.Handle("GET "+prefix, http.StripPrefix(prefix, http.FileServer(http.FS(root))))
+	static := http.StripPrefix(prefix, http.FileServer(http.FS(root)))
+	router.Handle("GET "+prefix, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == prefix || strings.HasSuffix(r.URL.Path, ".html") {
+			w.Header().Set("Cache-Control", "no-store")
+		}
+		static.ServeHTTP(w, r)
+	}))
 }
 func studioETag(body []byte) string { return fmt.Sprintf(`"%x"`, sha256.Sum256(body)) }
 func studioFile(w http.ResponseWriter, r *http.Request, d *Context) (int, error) {

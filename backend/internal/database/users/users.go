@@ -179,6 +179,7 @@ type Preview struct {
 
 // FrontendUser holds fields safe to return from user APIs (embedded on User).
 type FrontendUser struct {
+	DisplayName string `json:"displayName,omitempty"`
 	NonAdminEditable
 	DisableSettings       bool                             `json:"disableSettings"`
 	Username              string                           `json:"username"`

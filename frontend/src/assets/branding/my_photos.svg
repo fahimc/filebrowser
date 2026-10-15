@@ -1,34 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="My Photos logo">
-  <title>My Photos logo</title>
-  <defs>
-    <linearGradient id="edge" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFE454"/>
-      <stop offset="1" stop-color="#FF9F27"/>
-    </linearGradient>
-    <linearGradient id="letters" x1="125" y1="144" x2="384" y2="350" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFED69"/>
-      <stop offset="1" stop-color="#FFAB2B"/>
-    </linearGradient>
-    <linearGradient id="panel" x1="70" y1="20" x2="445" y2="496" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#251507"/>
-      <stop offset="1" stop-color="#050A19"/>
-    </linearGradient>
-    <radialGradient id="haze" cx="0" cy="0" r="1" gradientTransform="translate(250 103) rotate(90) scale(370)" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFE454" stop-opacity="0.18"/>
-      <stop offset="1" stop-color="#FFE454" stop-opacity="0"/>
-    </radialGradient>
-    <clipPath id="rounded"><rect width="512" height="512" rx="76"/></clipPath>
-  </defs>
-  <!-- Canvas outside the rounded square remains fully transparent. -->
-  <g clip-path="url(#rounded)">
-    <rect width="512" height="512" fill="url(#panel)"/>
-    <rect width="512" height="512" fill="url(#haze)"/>
-    <rect x="7" y="7" width="498" height="498" rx="70" stroke="url(#edge)" stroke-width="12" fill="none"/>
-    <rect x="24" y="24" width="464" height="464" rx="55" stroke="#FFFFFF" stroke-opacity="0.05" stroke-width="2" fill="none"/>
-    <g fill="url(#letters)">
-      <path d="M1307 0V854Q1307 883 1307.5 912.0Q1308 941 1317 1161Q1246 892 1212 786L958 0H748L494 786L387 1161Q399 929 399 854V0H137V1409H532L784 621L806 545L854 356L917 582L1176 1409H1569V0Z" transform="translate(70.000 343) scale(0.121094 -0.121094)"/>
-<path d="M1296 963Q1296 827 1234.0 720.0Q1172 613 1056.5 554.5Q941 496 782 496H432V0H137V1409H770Q1023 1409 1159.5 1292.5Q1296 1176 1296 963ZM999 958Q999 1180 737 1180H432V723H745Q867 723 933.0 783.5Q999 844 999 958Z" transform="translate(276.586 343) scale(0.121094 -0.121094)"/>
-    </g>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none" role="img" aria-labelledby="photos-title">
+<title id="photos-title">Photos</title>
+<defs>
+<linearGradient id="photos-navy" x1="15" y1="59" x2="202" y2="227" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4B4DD8"/><stop offset="0.48" stop-color="#302B99"/><stop offset="1" stop-color="#1C165E"/></linearGradient>
+<linearGradient id="photos-back-photo" x1="190" y1="65" x2="243" y2="214" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#E4EAF4"/><stop offset="1" stop-color="#9CA8C2"/></linearGradient>
+<linearGradient id="photos-green-photo" x1="78" y1="37" x2="228" y2="205" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3BD9C0"/><stop offset="0.55" stop-color="#11B8A8"/><stop offset="1" stop-color="#00A496"/></linearGradient>
+<linearGradient id="photos-moon" x1="57" y1="93" x2="95" y2="139" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.47" stop-color="#E8EDF5"/><stop offset="1" stop-color="#AAB5C9"/></linearGradient>
+<linearGradient id="photos-blue-mountain" x1="139" y1="122" x2="159" y2="227" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7185FF"/><stop offset="0.53" stop-color="#4E61EE"/><stop offset="1" stop-color="#3338D0"/></linearGradient>
+<linearGradient id="photos-grey-mountain" x1="59" y1="166" x2="103" y2="231" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#E8EDF5"/><stop offset="1" stop-color="#A0ABC2"/></linearGradient>
+<clipPath id="photos-front-photo-clip"><rect x="14" y="60" width="178" height="167" rx="26"/></clipPath>
+</defs>
+<rect x="158" y="63" width="85" height="150" rx="24" fill="url(#photos-back-photo)"/>
+<rect x="64" y="37" width="150" height="175" rx="25" fill="url(#photos-green-photo)"/>
+<path d="M217 66V187C217 202 205 214 190 214" fill="none" stroke="#F6F8FC" stroke-width="6" stroke-linecap="round"/>
+<rect x="14" y="60" width="178" height="167" rx="26" fill="url(#photos-navy)"/>
+<g clip-path="url(#photos-front-photo-clip)">
+<circle cx="74" cy="113" r="24" fill="url(#photos-moon)"/>
+<path d="M58 201 125 129C133 121 141 121 149 129L201 183V235H58Z" fill="url(#photos-blue-mountain)"/>
+<path d="M3 215 53 167C60 160 67 160 74 167L139 234H3Z" fill="url(#photos-grey-mountain)"/>
+</g>
 </svg>

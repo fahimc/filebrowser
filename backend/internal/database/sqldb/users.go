@@ -14,15 +14,16 @@ import (
 
 // UserData holds all the non-queryable user fields in JSON
 type UserData struct {
-	Password string `json:"password,omitempty"`
+	DisplayName string `json:"displayName,omitempty"`
+	Password    string `json:"password,omitempty"`
 	// BackendScopes: persisted source access (Name = backend path). JSON key "scopes" is historical on-disk.
-	BackendScopes    []users.BackendScope       `json:"backendScopes"`
-	Tokens           map[string]users.AuthToken `json:"tokens,omitempty"`
-	TOTPSecret       string                     `json:"totpSecret,omitempty"`
-	TOTPNonce        string                     `json:"totpNonce,omitempty"`
-	LoginMethod      users.LoginMethod          `json:"loginMethod"`
-	OtpEnabled       bool                       `json:"otpEnabled"`
-	Version          int                        `json:"version"`
+	BackendScopes            []users.BackendScope                   `json:"backendScopes"`
+	Tokens                   map[string]users.AuthToken             `json:"tokens,omitempty"`
+	TOTPSecret               string                                 `json:"totpSecret,omitempty"`
+	TOTPNonce                string                                 `json:"totpNonce,omitempty"`
+	LoginMethod              users.LoginMethod                      `json:"loginMethod"`
+	OtpEnabled               bool                                   `json:"otpEnabled"`
+	Version                  int                                    `json:"version"`
 	ShowFirstLogin           bool                                   `json:"showFirstLogin"`
 	PinnedItems              users.PinnedItems                      `json:"pinnedItems,omitempty"`
 	Profile                  json.RawMessage                        `json:"profile,omitempty"`
@@ -89,6 +90,7 @@ func finishUserLoad(user *users.User, userDataJSON []byte) error {
 	if err := json.Unmarshal(userDataJSON, &userData); err != nil {
 		return fmt.Errorf("failed to unmarshal user data: %w", err)
 	}
+	user.DisplayName = userData.DisplayName
 	user.Password = userData.Password
 	user.BackendScopes = userData.BackendScopes
 	user.Tokens = userData.Tokens
@@ -151,6 +153,7 @@ func userDataForPersist(user *users.User) UserData {
 		settingsJSON = nil
 	}
 	return UserData{
+		DisplayName:              user.DisplayName,
 		Password:                 user.Password,
 		BackendScopes:            user.BackendScopes,
 		Tokens:                   users.TokensForPersist(user.Tokens),
