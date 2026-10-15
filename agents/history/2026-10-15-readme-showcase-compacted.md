@@ -26,3 +26,14 @@ Publication verified on fork/drive-reskin at 8fa6ed6ebd01c4a61ab95c03f0140cb51ac
 The fork default branch remains upstream-tracking main. The current README
 explicitly points viewers/builders at drive-reskin; do not switch the default
 branch or rewrite upstream main as part of a documentation-only continuation.
+
+## Branch promotion requested after publication
+
+The user subsequently requested merging drive-reskin into master. This supersedes
+the earlier default-branch restriction above. No master existed on the fork;
+created it from fork/main (91bc608f) and fast-forwarded drive-reskin (620fe412).
+All custom app and README commits are retained, with no source-tree merge edits.
+README now identifies master as the canonical branch. Publish master to the
+user-owned fork and set it as GitHub's default; preserve main and drive-reskin.
+Keep GitHub Actions disabled and preserve the two untracked preview artifacts.
+No executable rebuild or runtime tests are needed for this branch promotion.
